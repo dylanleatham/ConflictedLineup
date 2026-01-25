@@ -5,6 +5,9 @@
 
 set -e
 
+# Prevent Git Bash from converting paths like "/" to "C:/Program Files/Git/"
+export MSYS_NO_PATHCONV=1
+
 if [ -z "$1" ]; then
   echo "Usage: ./infra/frontdoor-setup.sh <custom-domain>"
   echo "Example: ./infra/frontdoor-setup.sh app.conflictedlineup.com"
