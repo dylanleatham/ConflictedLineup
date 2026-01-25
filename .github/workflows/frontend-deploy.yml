@@ -64,7 +64,7 @@ jobs:
             "name": "conflictedlineup-frontend",
             "private": true,
             "scripts": {
-              "start": "serve -s . -l 8080"
+              "start": "npx serve -s . -l $PORT"
             },
             "dependencies": {
               "serve": "^14.0.0"
@@ -84,6 +84,9 @@ jobs:
         with:
           app-name: conflictedlineup-web
           package: ./frontend/dist
+
+      - name: Configure startup command
+        run: az webapp config set --resource-group rg-conflictedlineup-prod-centralus --name conflictedlineup-web --startup-file 'pm2 serve /home/site/wwwroot --no-daemon --spa'
 
       - name: Logout from Azure
         if: always()
