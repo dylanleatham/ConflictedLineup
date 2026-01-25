@@ -26,3 +26,4 @@ app.MapGet("/api/health", () =>
 });
 
 app.Run();
+# Trigger CI/CD
