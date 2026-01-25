@@ -11,8 +11,8 @@ APP_SERVICE_PLAN="asp-conflictedlineup-prod"
 BACKEND_APP="conflictedlineup-api"
 FRONTEND_APP="conflictedlineup-web"
 KEY_VAULT="conflictedlineup-kv"
-GITHUB_ORG="<GITHUB_ORG>"  # User fills in
-GITHUB_REPO="<GITHUB_REPO>"  # User fills in
+GITHUB_ORG="dylanleatham"  # User fills in
+GITHUB_REPO="ConflictedLineup"  # User fills in
 
 echo "Creating resource group..."
 az group create --name $RESOURCE_GROUP --location $LOCATION
