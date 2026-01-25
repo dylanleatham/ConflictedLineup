@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Phase: 1 of 5 (Skeleton Deployment)
-Plan: 2 of 5 in phase
+Plan: 3 of 5 in phase
 Status: In progress
-Last activity: 2026-01-25 — Completed 01-03-PLAN.md
+Last activity: 2026-01-25 — Completed 01-02-PLAN.md (Azure infrastructure configured)
 
-Progress: [██████████░░░░░░░░░░] 40%
+Progress: [████████████░░░░░░░░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 2 min
-- Total execution time: 0.07 hours
+- Total plans completed: 3
+- Average duration: 6 min
+- Total execution time: 0.32 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-skeleton-deployment | 2/5 | 4 min | 2 min |
+| 01-skeleton-deployment | 3/5 | 19 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-03 (1min)
-- Trend: Improving (average decreasing)
+- Last 5 plans: 01-01 (3min), 01-03 (1min), 01-02 (15min)
+- Trend: Variable (01-02 included manual Azure setup)
 
 *Updated after each plan completion*
 
@@ -51,6 +51,11 @@ Recent decisions affecting current work:
 - Vite polling for Docker hot reload: Ensures file watching works in containers across all platforms
 - Separate dev/prod Dockerfiles: Cleaner separation than environment-based conditional logic
 - Anonymous volume for node_modules: Prevents host mount from overwriting container dependencies
+
+**From 01-02 execution:**
+- Use RBAC for Key Vault instead of access policies for fine-grained control
+- Use OIDC federated credentials for GitHub Actions (no stored secrets)
+- Use Managed Identity for App Service to Key Vault access
 
 **From 01-03 execution:**
 - Use serve package for Azure App Service static file hosting with SPA routing support
@@ -74,6 +79,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 01-03-PLAN.md - GitHub Actions CI/CD workflow for frontend deployment created
+Stopped at: Completed 01-02-PLAN.md - Azure infrastructure and CI/CD configured
 Resume file: None
-Next: Execute 01-02 (Azure infrastructure setup) to enable actual deployment, or verify 01-03 workflow
+Next: Push to GitHub to trigger CI/CD, then execute 01-04 (Front Door and custom domain)
