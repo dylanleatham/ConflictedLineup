@@ -30,10 +30,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. GitHub Actions successfully deploys both frontend and backend on push to main
   4. Azure Key Vault stores placeholder secrets accessible via Managed Identity
   5. Local development environment runs both apps with hot reload
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 01-01: [TBD during planning]
+- [ ] 01-01-PLAN.md — Local development setup (React + .NET + Docker)
+- [ ] 01-02-PLAN.md — Backend Azure infrastructure and CI/CD
+- [ ] 01-03-PLAN.md — Frontend CI/CD workflow
+- [ ] 01-04-PLAN.md — Azure Front Door and custom domain
+- [ ] 01-05-PLAN.md — Final verification checkpoint
 
 ### Phase 2: Spotify Authentication
 **Goal**: Users can log in with Spotify and session persists across browser refresh
@@ -103,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Skeleton Deployment | 0/TBD | Not started | - |
+| 1. Skeleton Deployment | 0/5 | Planned | - |
 | 2. Spotify Authentication | 0/TBD | Not started | - |
 | 3. Artist Extraction | 0/TBD | Not started | - |
 | 4. Track Selection | 0/TBD | Not started | - |
@@ -111,4 +115,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-24*
+*Last updated: 2026-01-25*
