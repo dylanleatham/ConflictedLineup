@@ -56,6 +56,22 @@ jobs:
         env:
           VITE_API_URL: https://conflictedlineup-api.azurewebsites.net
 
+      - name: Prepare deployment package
+        run: |
+          cp frontend/serve.json frontend/dist/
+          cat > frontend/dist/package.json << 'EOF'
+          {
+            "name": "conflictedlineup-frontend",
+            "private": true,
+            "scripts": {
+              "start": "serve -s . -l 8080"
+            },
+            "dependencies": {
+              "serve": "^14.0.0"
+            }
+          }
+          EOF
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
