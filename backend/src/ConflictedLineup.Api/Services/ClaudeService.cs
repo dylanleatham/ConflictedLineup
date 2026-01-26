@@ -122,15 +122,13 @@ public class ClaudeService : IClaudeService
     {
         try
         {
-            // Read search-only prompt
-            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "search-lineup.txt");
-            var promptTemplate = await File.ReadAllTextAsync(promptPath);
+            // Read the same prompt used for poster extraction
+            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "extract-lineup.txt");
+            var promptText = await File.ReadAllTextAsync(promptPath);
 
-            // Replace placeholders
+            // Prepend context so Claude skips Step 1 (no image provided)
             var yearText = year?.ToString() ?? DateTime.Now.Year.ToString();
-            var prompt = promptTemplate
-                .Replace("{FESTIVAL_NAME}", festivalName)
-                .Replace("{YEAR}", yearText);
+            var prompt = $"The user is looking for the lineup for {festivalName} {yearText}. No image provided - skip Step 1 and proceed directly to Step 2 (web search).\n\n{promptText}";
 
             var messages = new List<Message>
             {
