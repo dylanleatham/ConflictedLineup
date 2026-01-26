@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Phase: 1 of 5 (Skeleton Deployment)
-Plan: 3 of 5 in phase
+Plan: 4 of 5 in phase
 Status: In progress
-Last activity: 2026-01-25 — Completed 01-02-PLAN.md (Azure infrastructure configured)
+Last activity: 2026-01-25 — Completed 01-04-PLAN.md (Front Door and custom domain configured)
 
-Progress: [████████████░░░░░░░░] 60%
+Progress: [████████████████░░░░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 6 min
-- Total execution time: 0.32 hours
+- Total plans completed: 4
+- Average duration: 10 min
+- Total execution time: 0.65 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-skeleton-deployment | 3/5 | 19 min | 6 min |
+| 01-skeleton-deployment | 4/5 | 39 min | 10 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-03 (1min), 01-02 (15min)
-- Trend: Variable (01-02 included manual Azure setup)
+- Last 5 plans: 01-01 (3min), 01-03 (1min), 01-02 (15min), 01-04 (20min)
+- Trend: Variable (plans with Azure Portal setup take longer)
 
 *Updated after each plan completion*
 
@@ -58,8 +58,13 @@ Recent decisions affecting current work:
 - Use Managed Identity for App Service to Key Vault access
 
 **From 01-03 execution:**
-- Use serve package for Azure App Service static file hosting with SPA routing support
+- Use pm2 serve for Azure App Service static file hosting with SPA routing support
 - Set VITE_API_URL during build to point to Azure backend URL
+
+**From 01-04 execution:**
+- Use Azure Front Door Standard as unified entry point for frontend and backend
+- Path-based routing: /api/* to backend, /* to frontend
+- Azure-managed TLS certificates for custom domain HTTPS
 
 ### Pending Todos
 
@@ -79,6 +84,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-25 (plan execution)
-Stopped at: Completed 01-02-PLAN.md - Azure infrastructure and CI/CD configured
+Stopped at: Completed 01-04-PLAN.md - Front Door and custom domain configured
 Resume file: None
-Next: Push to GitHub to trigger CI/CD, then execute 01-04 (Front Door and custom domain)
+Next: Execute 01-05 (Final verification checkpoint)
