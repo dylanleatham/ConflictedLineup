@@ -1,0 +1,18 @@
+Search for the lineup of {FESTIVAL_NAME} {YEAR}.
+
+Return a JSON object with this exact structure:
+{
+  "festivalName": "Official Festival Name",
+  "year": 2026,
+  "artists": [
+    {"name": "Artist Name", "confidence": "high"}
+  ],
+  "sources": ["URL of source"]
+}
+
+Guidelines:
+- Find the most recent/upcoming lineup if year is not specified
+- Include all announced artists (headliners and undercard)
+- Mark confidence as "uncertain" only if conflicting sources
+- Include source URLs for verification
+- Return ONLY the JSON, no other text

@@ -10,4 +10,8 @@
     <PackageReference Include="Anthropic.SDK" Version="5.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Prompts\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
