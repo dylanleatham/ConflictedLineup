@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 Phase: 3 of 5 (Artist Extraction)
 Plan: 1 of 3 complete
 Status: In progress
-Last activity: 2026-01-26 — Completed 03-02-PLAN.md
+Last activity: 2026-01-26 — Completed 03-01-PLAN.md
 
 Progress: [████████████████████] 100% (10/10 known plans)
 
@@ -21,7 +21,7 @@ Progress: [████████████████████] 100% (1
 **Velocity:**
 - Total plans completed: 10
 - Average duration: 7 min
-- Total execution time: 1.22 hours
+- Total execution time: 1.26 hours
 
 **By Phase:**
 
@@ -29,11 +29,11 @@ Progress: [████████████████████] 100% (1
 |-------|-------|-------|----------|
 | 01-skeleton-deployment | 5/5 | 44 min | 9 min |
 | 02-spotify-authentication | 4/4 | 28 min | 7 min |
-| 03-artist-extraction | 1/3 | 3 min | 3 min |
+| 03-artist-extraction | 1/3 | 4 min | 4 min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (3min), 02-02 (5min), 02-03 (5min), 02-04 (15min), 03-02 (3min)
-- Trend: Pure component work (no checkpoints) executes quickly
+- Last 5 plans: 02-02 (5min), 02-03 (5min), 02-04 (15min), 03-01 (4min)
+- Trend: Backend API integration with SDK setup and service patterns averaging 4 minutes
 
 *Updated after each plan completion*
 
@@ -90,10 +90,13 @@ Recent decisions affecting current work:
 - PKCE flow only needs Client ID, no Client Secret required
 - Wrap login() calls to prevent event object serialization errors
 
-**From 03-02 execution:**
-- MUI Autocomplete with freeSolo: Enables both controlled chips (from extraction) and free-text additions by users
-- Question mark icon for uncertain artists: Visual indicator appears inline with artist name rather than separate section
-- Orange tint for uncertain chips: Border and background color change draws attention without being alarming
+**From 03-01 execution:**
+- Use claude-sonnet-4-5-20250514 model for both vision and web search
+- Store prompts in text files with .csproj copy to output for version control and easy updates
+- Return partial results with warnings instead of hard failures for graceful degradation
+- Limit base64 images to 7MB (~5MB raw) to prevent memory issues
+- File-based prompts read from Prompts/*.txt in AppContext.BaseDirectory
+- Web search enabled via Anthropic console settings (not SDK Tools parameter)
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-26 (plan execution)
-Stopped at: Completed 03-02-PLAN.md - MUI Integration and Artist Chip List
+Stopped at: Completed 03-01-PLAN.md - Claude API Integration
 Resume file: None
-Next: Continue Phase 3 - run /gsd:execute-phase 3 for next plan
+Next: Continue Phase 3 - run /gsd:execute-plan for 03-02 or /gsd:execute-phase 3
