@@ -15,8 +15,8 @@ var app = builder.Build();
 
 app.UseCors();
 
-// Health check endpoint
-app.MapGet("/api/health", () =>
+// Health check endpoint (supports GET and HEAD for Front Door probes)
+app.MapMethods("/api/health", new[] { "GET", "HEAD" }, () =>
 {
     return Results.Ok(new
     {
