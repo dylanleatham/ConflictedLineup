@@ -12,7 +12,7 @@ This roadmap delivers a festival-to-playlist web app in 5 phases, starting with 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Skeleton Deployment** - End-to-end infrastructure deployed before features
+- [x] **Phase 1: Skeleton Deployment** - End-to-end infrastructure deployed before features
 - [ ] **Phase 2: Spotify Authentication** - OAuth working in production environment
 - [ ] **Phase 3: Artist Extraction** - AI-powered poster parsing and festival lookup
 - [ ] **Phase 4: Track Selection** - Personalized curation with familiar + top + recent tracks
@@ -33,11 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 01-01-PLAN.md — Local development setup (React + .NET + Docker)
-- [ ] 01-02-PLAN.md — Backend Azure infrastructure and CI/CD
-- [ ] 01-03-PLAN.md — Frontend CI/CD workflow
-- [ ] 01-04-PLAN.md — Azure Front Door and custom domain
-- [ ] 01-05-PLAN.md — Final verification checkpoint
+- [x] 01-01-PLAN.md — Local development setup (React + .NET + Docker)
+- [x] 01-02-PLAN.md — Backend Azure infrastructure and CI/CD
+- [x] 01-03-PLAN.md — Frontend CI/CD workflow
+- [x] 01-04-PLAN.md — Azure Front Door and custom domain
+- [x] 01-05-PLAN.md — Final verification checkpoint
 
 ### Phase 2: Spotify Authentication
 **Goal**: Users can log in with Spotify and session persists across browser refresh
@@ -107,7 +107,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Skeleton Deployment | 0/5 | Planned | - |
+| 1. Skeleton Deployment | 5/5 | ✓ Complete | 2026-01-25 |
 | 2. Spotify Authentication | 0/TBD | Not started | - |
 | 3. Artist Extraction | 0/TBD | Not started | - |
 | 4. Track Selection | 0/TBD | Not started | - |

@@ -46,11 +46,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Backend deployed to Azure App Service
-- [ ] **INFRA-02**: Frontend deployed via Azure (App Service or Static Web App)
-- [ ] **INFRA-03**: Secrets stored in Azure Key Vault
-- [ ] **INFRA-04**: CI/CD via GitHub Actions
-- [ ] **INFRA-05**: End-to-end skeleton deployed before feature implementation
+- [x] **INFRA-01**: Backend deployed to Azure App Service
+- [x] **INFRA-02**: Frontend deployed via Azure (App Service or Static Web App)
+- [x] **INFRA-03**: Secrets stored in Azure Key Vault
+- [x] **INFRA-04**: CI/CD via GitHub Actions
+- [x] **INFRA-05**: End-to-end skeleton deployed before feature implementation
 
 ## v2 Requirements
 
@@ -110,11 +110,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RESULTS-02 | Phase 5 | Pending |
 | RESULTS-03 | Phase 5 | Pending |
 | RESULTS-04 | Phase 5 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 27 total
@@ -123,4 +123,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-24 after roadmap creation*
+*Last updated: 2026-01-25 after Phase 1 completion*
