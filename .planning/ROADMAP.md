@@ -49,10 +49,13 @@ Plans:
   3. User can log out and authentication state clears
   4. Refresh tokens update automatically when expired without user intervention
   5. App displays user's Spotify profile name after successful login
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 02-01: [TBD during planning]
+- [ ] 02-01-PLAN.md — Auth infrastructure (OAuth config, AuthProvider, useAuth hook)
+- [ ] 02-02-PLAN.md — Login page with context and Spotify button
+- [ ] 02-03-PLAN.md — Post-login UI (header, profile dropdown, upload page)
+- [ ] 02-04-PLAN.md — Spotify app setup and end-to-end verification
 
 ### Phase 3: Artist Extraction
 **Goal**: Users can upload poster images or type festival names to extract artist lists with editing capability
@@ -108,7 +111,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Skeleton Deployment | 5/5 | ✓ Complete | 2026-01-25 |
-| 2. Spotify Authentication | 0/TBD | Not started | - |
+| 2. Spotify Authentication | 0/4 | Planned | - |
 | 3. Artist Extraction | 0/TBD | Not started | - |
 | 4. Track Selection | 0/TBD | Not started | - |
 | 5. Playlist Creation & Results | 0/TBD | Not started | - |
