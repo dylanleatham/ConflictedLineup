@@ -1,0 +1,117 @@
+.festival-search {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.search-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.search-form .MuiTextField-root {
+  flex: 1;
+  min-width: 200px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.search-form .year-select {
+  width: 120px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.search-form .search-button {
+  height: 56px;
+  background: #1DB954;
+  color: white;
+  font-weight: 600;
+  text-transform: none;
+  padding: 0 24px;
+  min-width: 140px;
+}
+
+.search-form .search-button:hover {
+  background: #1ed760;
+}
+
+.search-form .search-button:disabled {
+  background: rgba(29, 185, 84, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Dark theme MUI overrides */
+.festival-search .MuiInputBase-root {
+  color: white;
+}
+
+.festival-search .MuiInputLabel-root {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.festival-search .MuiInputLabel-root.Mui-focused {
+  color: #1DB954;
+}
+
+.festival-search .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.festival-search .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.festival-search .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1DB954;
+}
+
+.festival-search .MuiSvgIcon-root {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.festival-search .MuiSelect-icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.status-text {
+  margin-top: 16px;
+  text-align: center;
+  color: #1DB954;
+  font-weight: 500;
+}
+
+.error-alert {
+  margin-top: 16px;
+  background: rgba(211, 47, 47, 0.1);
+  border: 1px solid rgba(211, 47, 47, 0.5);
+}
+
+.error-alert .MuiAlert-message {
+  color: white;
+}
+
+.error-alert .MuiAlert-icon {
+  color: #f44336;
+}
+
+.error-alert .MuiButton-root {
+  color: white;
+  text-decoration: underline;
+}
+
+/* Responsive mobile styles */
+@media (max-width: 600px) {
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-form .MuiTextField-root,
+  .search-form .year-select,
+  .search-form .search-button {
+    width: 100%;
+  }
+}
