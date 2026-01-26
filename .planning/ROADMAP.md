@@ -13,7 +13,7 @@ This roadmap delivers a festival-to-playlist web app in 5 phases, starting with 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Skeleton Deployment** - End-to-end infrastructure deployed before features
-- [ ] **Phase 2: Spotify Authentication** - OAuth working in production environment
+- [x] **Phase 2: Spotify Authentication** - OAuth working in production environment
 - [ ] **Phase 3: Artist Extraction** - AI-powered poster parsing and festival lookup
 - [ ] **Phase 4: Track Selection** - Personalized curation with familiar + top + recent tracks
 - [ ] **Phase 5: Playlist Creation & Results** - Complete workflow from input to Spotify playlist
@@ -52,10 +52,10 @@ Plans:
 **Plans**: 4 plans in 3 waves
 
 Plans:
-- [ ] 02-01-PLAN.md — Auth infrastructure (OAuth config, AuthProvider, useAuth hook)
-- [ ] 02-02-PLAN.md — Login page with context and Spotify button
-- [ ] 02-03-PLAN.md — Post-login UI (header, profile dropdown, upload page)
-- [ ] 02-04-PLAN.md — Spotify app setup and end-to-end verification
+- [x] 02-01-PLAN.md — Auth infrastructure (OAuth config, AuthProvider, useAuth hook)
+- [x] 02-02-PLAN.md — Login page with context and Spotify button
+- [x] 02-03-PLAN.md — Post-login UI (header, profile dropdown, upload page)
+- [x] 02-04-PLAN.md — Spotify app setup and end-to-end verification
 
 ### Phase 3: Artist Extraction
 **Goal**: Users can upload poster images or type festival names to extract artist lists with editing capability
@@ -111,11 +111,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Skeleton Deployment | 5/5 | ✓ Complete | 2026-01-25 |
-| 2. Spotify Authentication | 0/4 | Planned | - |
+| 2. Spotify Authentication | 4/4 | ✓ Complete | 2026-01-26 |
 | 3. Artist Extraction | 0/TBD | Not started | - |
 | 4. Track Selection | 0/TBD | Not started | - |
 | 5. Playlist Creation & Results | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-25*
+*Last updated: 2026-01-26*
