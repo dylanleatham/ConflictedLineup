@@ -17,7 +17,13 @@ public class ClaudeService : IClaudeService
     private readonly AnthropicClient _client;
     private readonly ILogger<ClaudeService> _logger;
     private const string Model = "claude-sonnet-4-5-20250514";
-    private const int MaxTokens = 2048;
+    private const int MaxTokens = 4096;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+    };
 
     public ClaudeService(IConfiguration configuration, ILogger<ClaudeService> logger)
     {
@@ -32,8 +38,8 @@ public class ClaudeService : IClaudeService
     {
         try
         {
-            // Read prompt from file
-            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "poster-extraction.txt");
+            // Read unified prompt - handles both image analysis and web search with fallback
+            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "extract-lineup.txt");
             var promptText = await File.ReadAllTextAsync(promptPath);
 
             // Create vision message with image
@@ -69,15 +75,32 @@ public class ClaudeService : IClaudeService
             var responseText = response.Content.OfType<TextContent>().FirstOrDefault()?.Text
                 ?? throw new InvalidOperationException("No text response from Claude");
 
-            // Parse JSON response
-            var result = JsonSerializer.Deserialize<ArtistExtractionResult>(responseText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            // Extract JSON from response (in case there's extra text)
+            responseText = ExtractJson(responseText);
 
-            return result ?? new ArtistExtractionResult(
-                Artists: new List<ArtistInfo>(),
-                Warning: "Failed to parse Claude response"
+            // Parse Claude's response format
+            var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);
+
+            if (rawResult == null)
+            {
+                return new ArtistExtractionResult(
+                    Artists: new List<ArtistInfo>(),
+                    Warning: "Failed to parse Claude response"
+                );
+            }
+
+            // Map to ArtistExtractionResult with all artists marked high confidence
+            // (confidence comes from source - web is high, image extraction could vary)
+            var confidence = rawResult.Source == "web" ? "high" : "uncertain";
+            var artists = rawResult.Artists
+                .Select(name => new ArtistInfo(name, confidence))
+                .ToList();
+
+            return new ArtistExtractionResult(
+                Artists: artists,
+                FestivalName: rawResult.Festival,
+                Source: rawResult.Source,
+                SourceUrl: rawResult.SourceUrl
             );
         }
         catch (JsonException ex)
@@ -99,12 +122,12 @@ public class ClaudeService : IClaudeService
     {
         try
         {
-            // Read prompt from file
-            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "festival-search.txt");
+            // Read search-only prompt
+            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "search-lineup.txt");
             var promptTemplate = await File.ReadAllTextAsync(promptPath);
 
             // Replace placeholders
-            var yearText = year?.ToString() ?? "latest";
+            var yearText = year?.ToString() ?? DateTime.Now.Year.ToString();
             var prompt = promptTemplate
                 .Replace("{FESTIVAL_NAME}", festivalName)
                 .Replace("{YEAR}", yearText);
@@ -133,18 +156,74 @@ public class ClaudeService : IClaudeService
             var responseText = response.Content.OfType<TextContent>().FirstOrDefault()?.Text
                 ?? throw new InvalidOperationException("No text response from Claude");
 
-            // Parse JSON response
-            var result = JsonSerializer.Deserialize<FestivalSearchResult>(responseText, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            // Extract JSON from response
+            responseText = ExtractJson(responseText);
 
-            return result ?? throw new InvalidOperationException("Failed to parse festival search response");
+            // Parse Claude's response format
+            var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);
+
+            if (rawResult == null)
+            {
+                throw new InvalidOperationException("Failed to parse festival search response");
+            }
+
+            // Map to FestivalSearchResult
+            var artists = rawResult.Artists
+                .Select(name => new ArtistInfo(name, "high"))
+                .ToList();
+
+            var sources = rawResult.SourceUrl != null
+                ? new List<string> { rawResult.SourceUrl }
+                : new List<string>();
+
+            // Parse year from festival name or use provided year
+            var resultYear = year ?? DateTime.Now.Year;
+
+            return new FestivalSearchResult(
+                FestivalName: rawResult.Festival,
+                Year: resultYear,
+                Artists: artists,
+                Sources: sources
+            );
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error searching festival lineup for {FestivalName}", festivalName);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Extract JSON object from response text, handling potential markdown code blocks
+    /// </summary>
+    private static string ExtractJson(string text)
+    {
+        text = text.Trim();
+
+        // Handle markdown code blocks
+        if (text.StartsWith("```json"))
+        {
+            text = text[7..];
+        }
+        else if (text.StartsWith("```"))
+        {
+            text = text[3..];
+        }
+
+        if (text.EndsWith("```"))
+        {
+            text = text[..^3];
+        }
+
+        // Find the JSON object
+        var startIndex = text.IndexOf('{');
+        var endIndex = text.LastIndexOf('}');
+
+        if (startIndex >= 0 && endIndex > startIndex)
+        {
+            text = text[startIndex..(endIndex + 1)];
+        }
+
+        return text.Trim();
     }
 }

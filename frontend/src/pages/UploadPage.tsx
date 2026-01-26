@@ -3,7 +3,7 @@ import { Alert } from '@mui/material';
 import { PosterUpload } from '../components/PosterUpload';
 import { FestivalSearch } from '../components/FestivalSearch';
 import { EditableArtistList } from '../components/EditableArtistList';
-import { ArtistInfo } from '../types/extraction';
+import { ArtistInfo, ArtistExtractionResult } from '../types/extraction';
 import './UploadPage.css';
 
 type Mode = 'upload' | 'search';
@@ -13,6 +13,8 @@ interface ExtractionResult {
   warning?: string;
   festivalName?: string;
   year?: number;
+  source?: 'web' | 'image';
+  sourceUrl?: string;
   sources?: string[];
 }
 
@@ -21,9 +23,16 @@ export function UploadPage() {
   const [result, setResult] = useState<ExtractionResult | null>(null);
   const [editedArtists, setEditedArtists] = useState<ArtistInfo[]>([]);
 
-  const handlePosterComplete = (artists: ArtistInfo[], warning?: string) => {
-    setResult({ artists, warning });
-    setEditedArtists(artists);
+  const handlePosterComplete = (extractionResult: ArtistExtractionResult) => {
+    setResult({
+      artists: extractionResult.artists,
+      warning: extractionResult.warning,
+      festivalName: extractionResult.festivalName,
+      source: extractionResult.source,
+      sourceUrl: extractionResult.sourceUrl,
+      sources: extractionResult.sourceUrl ? [extractionResult.sourceUrl] : undefined
+    });
+    setEditedArtists(extractionResult.artists);
   };
 
   const handleSearchComplete = (
@@ -94,12 +103,17 @@ export function UploadPage() {
         <div className="results-section">
           <div className="results-header">
             <h2>
-              {result.festivalName && result.year
-                ? `${result.festivalName} ${result.year}`
+              {result.festivalName
+                ? result.festivalName
                 : 'Extracted Artists'}
             </h2>
             <span className="artist-count">
               {editedArtists.length} artist{editedArtists.length !== 1 ? 's' : ''}
+              {result.source && (
+                <span className="source-indicator">
+                  {' '}(from {result.source})
+                </span>
+              )}
             </span>
           </div>
 

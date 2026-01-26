@@ -1,6 +1,16 @@
 namespace ConflictedLineup.Api.Models;
 
 /// <summary>
+/// Raw response from Claude lineup extraction
+/// </summary>
+public record LineupExtractionResponse(
+    string Festival,
+    string Source,       // "web" | "image"
+    string? SourceUrl,
+    List<string> Artists
+);
+
+/// <summary>
 /// Information about an extracted artist with confidence level
 /// </summary>
 public record ArtistInfo(
@@ -13,6 +23,9 @@ public record ArtistInfo(
 /// </summary>
 public record ArtistExtractionResult(
     List<ArtistInfo> Artists,
+    string? FestivalName = null,
+    string? Source = null,
+    string? SourceUrl = null,
     string? Warning = null
 );
 

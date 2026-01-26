@@ -5,6 +5,9 @@ export interface ArtistInfo {
 
 export interface ArtistExtractionResult {
   artists: ArtistInfo[];
+  festivalName?: string;
+  source?: 'web' | 'image';
+  sourceUrl?: string;
   warning?: string;
 }
 

@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { Box, Button, Typography, LinearProgress, Alert } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { ArtistInfo } from '../types/extraction';
+import { ArtistExtractionResult } from '../types/extraction';
 import { validateImageFile, optimizeImage } from '../utils/imageValidation';
 import { extractFromPoster } from '../services/extractionApi';
 import './PosterUpload.css';
 
 interface PosterUploadProps {
-  onExtractionComplete: (artists: ArtistInfo[], warning?: string) => void;
+  onExtractionComplete: (result: ArtistExtractionResult) => void;
   onSwitchToSearch: () => void;
 }
 
@@ -76,7 +76,7 @@ export function PosterUpload({ onExtractionComplete, onSwitchToSearch }: PosterU
       setStatus('complete');
 
       // Pass results to parent
-      onExtractionComplete(result.artists, result.warning);
+      onExtractionComplete(result);
     } catch (err) {
       setStatus('error');
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
