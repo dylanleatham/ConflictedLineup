@@ -1,4 +1,8 @@
 using ConflictedLineup.Api.Services;
+using DotNetEnv;
+
+// Load .env file (searches current directory and parents)
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,9 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                   "http://localhost:5173",
+                  "http://localhost:5175",
+                  "http://127.0.0.1:5173",
+                  "http://127.0.0.1:5175",
                   "https://conflictedlineup.com",
                   "https://www.conflictedlineup.com"
               )
