@@ -1,0 +1,62 @@
+.editable-artist-list {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.editable-artist-list .MuiAutocomplete-root {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.editable-artist-list .MuiInputBase-root {
+  color: white;
+}
+
+.editable-artist-list .MuiInputLabel-root {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.editable-artist-list .MuiInputLabel-root.Mui-focused {
+  color: #1DB954;
+}
+
+.editable-artist-list .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.editable-artist-list .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.editable-artist-list .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1DB954;
+}
+
+.editable-artist-list .MuiFormHelperText-root {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.editable-artist-list .MuiChip-root {
+  background: rgba(29, 185, 84, 0.2);
+  color: white;
+  border: 1px solid rgba(29, 185, 84, 0.5);
+  margin: 2px;
+}
+
+.editable-artist-list .MuiChip-root:hover {
+  background: rgba(29, 185, 84, 0.3);
+}
+
+.editable-artist-list .MuiChip-deleteIcon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.editable-artist-list .MuiChip-deleteIcon:hover {
+  color: white;
+}
+
+.editable-artist-list .uncertain-chip {
+  background: rgba(255, 152, 0, 0.2);
+  border-color: rgba(255, 152, 0, 0.5);
+}
