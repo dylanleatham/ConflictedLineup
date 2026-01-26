@@ -6,15 +6,13 @@ interface SpotifyLoginButtonProps {
   isLoading?: boolean;
 }
 
-export function SpotifyLoginButton({
-  onClick,
-  disabled = false,
-  isLoading = false
-}: SpotifyLoginButtonProps) {
+export function SpotifyLoginButton({ onClick, disabled = false, isLoading = false }: SpotifyLoginButtonProps) {
+  const buttonText = isLoading ? 'Connecting...' : 'Log in with Spotify';
   const isDisabled = disabled || isLoading;
 
   return (
     <button
+      className="spotify-login-button"
       onClick={onClick}
       disabled={isDisabled}
       style={{
@@ -25,12 +23,12 @@ export function SpotifyLoginButton({
         padding: '14px 32px',
         fontSize: '16px',
         fontWeight: 700,
-        display: 'flex',
+        display: 'inline-flex',
         alignItems: 'center',
         gap: '8px',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled ? 0.6 : 1,
-        transition: 'background-color 0.2s ease',
+        transition: 'all 0.2s ease',
       }}
       onMouseEnter={(e) => {
         if (!isDisabled) {
@@ -38,13 +36,11 @@ export function SpotifyLoginButton({
         }
       }}
       onMouseLeave={(e) => {
-        if (!isDisabled) {
-          e.currentTarget.style.backgroundColor = '#1ED760';
-        }
+        e.currentTarget.style.backgroundColor = '#1ED760';
       }}
     >
       <SpotifyIcon size={24} />
-      {isLoading ? 'Connecting...' : 'Log in with Spotify'}
+      {buttonText}
     </button>
   );
 }
