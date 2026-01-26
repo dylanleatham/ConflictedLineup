@@ -17,7 +17,7 @@ import { ArtistInfo } from '../types/extraction';
 import './FestivalSearch.css';
 
 interface FestivalSearchProps {
-  onSearchComplete: (artists: ArtistInfo[], festivalName: string, year: number) => void;
+  onSearchComplete: (artists: ArtistInfo[], festivalName: string, year: number, sources: string[]) => void;
   onSwitchToUpload: () => void;
 }
 
@@ -49,7 +49,7 @@ export function FestivalSearch({ onSearchComplete, onSwitchToUpload }: FestivalS
       }
 
       setStatusText(`Found ${result.artists.length} artists!`);
-      onSearchComplete(result.artists, result.festivalName, result.year);
+      onSearchComplete(result.artists, result.festivalName, result.year, result.sources);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to search festival';
       setError(message);
