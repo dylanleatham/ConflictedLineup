@@ -45,7 +45,7 @@ export function LoginPage() {
 
         <div className="login-button-container">
           <SpotifyLoginButton
-            onClick={login}
+            onClick={() => login()}
             isLoading={isLoading}
           />
         </div>
