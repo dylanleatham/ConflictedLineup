@@ -1,6 +1,8 @@
 import './App.css';
-import { useAuth } from './auth/useAuth';
+import { useAuth } from './auth';
+import { Header } from './components/Header';
 import { LoginPage } from './components/LoginPage';
+import { UploadPage } from './pages/UploadPage';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -9,7 +11,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="app-container">
-        <div style={{ textAlign: 'center' }}>
+        <div className="main-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p>Loading...</p>
         </div>
       </div>
@@ -21,12 +23,11 @@ function App() {
     return <LoginPage />;
   }
 
-  // Show placeholder for authenticated state (upload page coming in Plan 03)
+  // Show Header and UploadPage when authenticated
   return (
     <div className="app-container">
-      <div className="main-content">
-        <h1>Authenticated! Upload page coming soon.</h1>
-      </div>
+      <Header />
+      <UploadPage />
     </div>
   );
 }
