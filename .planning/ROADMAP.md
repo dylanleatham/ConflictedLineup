@@ -62,15 +62,19 @@ Plans:
 **Depends on**: Phase 2
 **Requirements**: INPUT-01, INPUT-02, INPUT-03, INPUT-04, INPUT-05, INPUT-06
 **Success Criteria** (what must be TRUE):
-  1. User can upload festival poster image (PNG/JPG) under 5MB via drag-and-drop or file picker
+  1. User can upload festival poster image (PNG/JPG) under 5MB via file picker
   2. System extracts artist names from poster and displays them as editable list within 30 seconds
   3. User can type festival name and system returns lineup via web search
   4. User can manually add, remove, or edit artist names before proceeding
   5. System reads AI prompt from codebase file, not hardcoded strings
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 03-01: [TBD during planning]
+- [ ] 03-01-PLAN.md — Backend API with Claude SDK (extraction endpoints, prompt files)
+- [ ] 03-02-PLAN.md — Frontend MUI setup and editable chip list component
+- [ ] 03-03-PLAN.md — Poster upload UI (file picker, preview, extraction)
+- [ ] 03-04-PLAN.md — Festival search UI (autocomplete, web search)
+- [ ] 03-05-PLAN.md — Integration and end-to-end verification
 
 ### Phase 4: Track Selection
 **Goal**: System selects personalized tracks for each artist using familiar + top + recent logic
@@ -112,7 +116,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Skeleton Deployment | 5/5 | ✓ Complete | 2026-01-25 |
 | 2. Spotify Authentication | 4/4 | ✓ Complete | 2026-01-26 |
-| 3. Artist Extraction | 0/TBD | Not started | - |
+| 3. Artist Extraction | 0/5 | Planned | - |
 | 4. Track Selection | 0/TBD | Not started | - |
 | 5. Playlist Creation & Results | 0/TBD | Not started | - |
 
