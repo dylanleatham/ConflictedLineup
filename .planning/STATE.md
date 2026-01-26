@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Users can instantly turn any festival lineup into a personalized discovery playlist without manual artist-by-artist searching.
-**Current focus:** Phase 1 - Skeleton Deployment
+**Current focus:** Phase 2 - Spotify Authentication
 
 ## Current Position
 
-Phase: 1 of 5 (Skeleton Deployment) ✓ COMPLETE
-Plan: 5/5 complete
-Status: Phase complete
-Last activity: 2026-01-25 — Phase 1 verified and complete
+Phase: 2 of 5 (Spotify Authentication)
+Plan: 1 of 4 complete
+Status: In progress
+Last activity: 2026-01-25 — Completed 02-01-PLAN.md
 
-Progress: [████████████████████] 100%
+Progress: [█████████████░░░░░░░] 67% (6/9 known plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 9 min
-- Total execution time: 0.73 hours
+- Total plans completed: 6
+- Average duration: 8 min
+- Total execution time: 0.78 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-skeleton-deployment | 5/5 | 44 min | 9 min |
+| 02-spotify-authentication | 1/4 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (3min), 01-03 (1min), 01-02 (15min), 01-04 (20min), 01-05 (5min)
-- Trend: Variable (plans with Azure Portal setup take longer)
+- Last 5 plans: 01-03 (1min), 01-02 (15min), 01-04 (20min), 01-05 (5min), 02-01 (3min)
+- Trend: Auth infrastructure setup faster than infrastructure provisioning
 
 *Updated after each plan completion*
 
@@ -66,6 +67,12 @@ Recent decisions affecting current work:
 - Path-based routing: /api/* to backend, /* to frontend
 - Azure-managed TLS certificates for custom domain HTTPS
 
+**From 02-01 execution:**
+- Use react-oauth2-code-pkce for OAuth: Provider-agnostic library with built-in PKCE, token refresh, and storage
+- Set decodeToken: false for Spotify: Tokens are opaque, not JWTs
+- localStorage for token persistence: Sessions persist across browser restarts
+- Graceful profile fetch failure: Continue with generic avatar if profile fetch fails
+
 ### Pending Todos
 
 None yet.
@@ -83,7 +90,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-25 (phase completion)
-Stopped at: Phase 1 complete - skeleton deployment verified
+Last session: 2026-01-25 (plan execution)
+Stopped at: Completed 02-01-PLAN.md (Auth infrastructure)
 Resume file: None
-Next: Phase 2 (Spotify Authentication) - run /gsd:discuss-phase 2 or /gsd:plan-phase 2
+Next: Plan 02-02 (Login page with Spotify button)
