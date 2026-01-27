@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Users can instantly turn any festival lineup into a personalized discovery playlist without manual artist-by-artist searching.
-**Current focus:** Phase 4 - Track Selection & Playlist Creation (In Progress)
+**Current focus:** Phase 5 - Playlist Creation & Results
 
 ## Current Position
 
-Phase: 4 of 5 (Track Selection)
-Plan: 3 of 4 complete (04-03)
-Status: In progress
-Last activity: 2026-01-27 — Completed 04-03-PLAN.md (Track Selection Orchestrator)
+Phase: 4 of 5 (Track Selection) - COMPLETE
+Plan: 4 of 4 complete (04-01, 04-02, 04-03, 04-04)
+Status: Ready for Phase 5
+Last activity: 2026-01-27 — Completed Phase 4 (Track Selection)
 
-Progress: [█████████████████░░░] 94% (17/18 known plans)
+Progress: [████████████████████] 100% (18/18 known plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
-- Average duration: 9 min
-- Total execution time: 2.5 hours
+- Total plans completed: 18
+- Average duration: 11 min
+- Total execution time: 3.3 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [█████████████████░░░] 94% (17
 | 01-skeleton-deployment | 5/5 | 44 min | 9 min |
 | 02-spotify-authentication | 4/4 | 28 min | 7 min |
 | 03-artist-extraction | 5/5 | 63 min | 13 min |
-| 04-track-selection | 3/4 | 14 min | 5 min |
+| 04-track-selection | 4/4 | 59 min | 15 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-05 (45min iterative), 04-01 (3min), 04-02 (3min), 04-03 (8min)
-- Trend: Spotify services created quickly with clean patterns
+- Last 5 plans: 04-01 (3min), 04-02 (3min), 04-03 (8min), 04-04 (45min with debugging)
+- Trend: 04-04 extended due to rate limiting and search result debugging
 
 *Updated after each plan completion*
 
@@ -137,6 +137,13 @@ Recent decisions affecting current work:
 - Deduplication priority: familiar > top > recent (HashSet<string> with SpotifyTrackId)
 - Backfill strategy: When recent releases < 3, add more top tracks (up to 6 total from top)
 
+**From 04-04 execution:**
+- Spotify search Limit=5 instead of Limit=1: Prevents wrong cached results when rate limited
+- Simplified to top 5 tracks only: Disabled familiar/recent to avoid rate limiting (can re-enable later)
+- useRef guard for API calls: Prevents duplicate calls from React StrictMode double-mounting
+- 1-second delay between artists: Prevents Spotify rate limiting during batch processing
+- /callback redirect route: OAuth callback needs explicit redirect to / after completion
+
 ### Pending Todos
 
 None yet.
@@ -155,6 +162,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-27
-Stopped at: Completed 04-03-PLAN.md - Track Selection Orchestrator
+Stopped at: Phase 4 complete - Track Selection working with top 5 tracks per artist
 Resume file: None
-Next: Execute 04-04-PLAN.md - Track Selection Endpoint
+Next: Plan Phase 5 - Playlist Creation & Results

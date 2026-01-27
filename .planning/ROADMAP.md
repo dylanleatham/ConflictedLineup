@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Skeleton Deployment** - End-to-end infrastructure deployed before features
 - [x] **Phase 2: Spotify Authentication** - OAuth working in production environment
 - [x] **Phase 3: Artist Extraction** - AI-powered poster parsing and festival lookup
-- [ ] **Phase 4: Track Selection** - Personalized curation with familiar + top + recent tracks
+- [x] **Phase 4: Track Selection** - Personalized curation with familiar + top + recent tracks
 - [ ] **Phase 5: Playlist Creation & Results** - Complete workflow from input to Spotify playlist
 
 ## Phase Details
@@ -89,10 +89,10 @@ Plans:
 **Plans**: 4 plans in 4 waves
 
 Plans:
-- [ ] 04-01-PLAN.md — OAuth scopes update and SpotifyAPI-NET setup with models
-- [ ] 04-02-PLAN.md — Core Spotify services (search, top tracks, recent releases)
-- [ ] 04-03-PLAN.md — User library service and track selection orchestrator
-- [ ] 04-04-PLAN.md — API endpoint and frontend track selection page
+- [x] 04-01-PLAN.md — OAuth scopes update and SpotifyAPI-NET setup with models
+- [x] 04-02-PLAN.md — Core Spotify services (search, top tracks, recent releases)
+- [x] 04-03-PLAN.md — User library service and track selection orchestrator
+- [x] 04-04-PLAN.md — API endpoint and frontend track selection page
 
 ### Phase 5: Playlist Creation & Results
 **Goal**: Users receive complete Spotify playlist with visibility into included and skipped artists
@@ -120,9 +120,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Skeleton Deployment | 5/5 | Complete | 2026-01-25 |
 | 2. Spotify Authentication | 4/4 | Complete | 2026-01-26 |
 | 3. Artist Extraction | 5/5 | Complete | 2026-01-26 |
-| 4. Track Selection | 0/4 | Planned | - |
+| 4. Track Selection | 4/4 | Complete | 2026-01-27 |
 | 5. Playlist Creation & Results | 0/TBD | Not started | - |
 
 ---
 *Roadmap created: 2026-01-24*
-*Last updated: 2026-01-26*
+*Last updated: 2026-01-27*

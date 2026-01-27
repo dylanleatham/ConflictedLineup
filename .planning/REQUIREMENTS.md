@@ -9,27 +9,27 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Input Methods
 
-- [ ] **INPUT-01**: User can upload a festival poster image
-- [ ] **INPUT-02**: System extracts artist names from poster using Claude Vision API
-- [ ] **INPUT-03**: User can type a festival name to look up lineup
-- [ ] **INPUT-04**: System looks up festival lineup using Claude web search
-- [ ] **INPUT-05**: User can edit/remove extracted artist names before playlist creation
-- [ ] **INPUT-06**: System reads AI prompt from file in codebase (not hardcoded)
+- [x] **INPUT-01**: User can upload a festival poster image
+- [x] **INPUT-02**: System extracts artist names from poster using Claude Vision API
+- [x] **INPUT-03**: User can type a festival name to look up lineup
+- [x] **INPUT-04**: System looks up festival lineup using Claude web search
+- [x] **INPUT-05**: User can edit/remove extracted artist names before playlist creation
+- [x] **INPUT-06**: System reads AI prompt from file in codebase (not hardcoded)
 
 ### Authentication
 
-- [ ] **AUTH-01**: User must authenticate with Spotify to use the app
-- [ ] **AUTH-02**: System uses OAuth PKCE flow (not implicit grant)
-- [ ] **AUTH-03**: User session persists across browser refresh
-- [ ] **AUTH-04**: User can log out
+- [x] **AUTH-01**: User must authenticate with Spotify to use the app
+- [x] **AUTH-02**: System uses OAuth PKCE flow (not implicit grant)
+- [x] **AUTH-03**: User session persists across browser refresh
+- [x] **AUTH-04**: User can log out
 
 ### Track Selection
 
-- [ ] **TRACK-01**: System fetches 3 top tracks per artist from Spotify
-- [ ] **TRACK-02**: System fetches 3 recent releases per artist from Spotify
-- [ ] **TRACK-03**: System fetches 3 familiar tracks per artist from user's existing playlists
-- [ ] **TRACK-04**: System prevents duplicate tracks across categories
-- [ ] **TRACK-05**: System skips artists with no Spotify match
+- [x] **TRACK-01**: System fetches 3 top tracks per artist from Spotify
+- [x] **TRACK-02**: System fetches 3 recent releases per artist from Spotify
+- [x] **TRACK-03**: System fetches 3 familiar tracks per artist from user's existing playlists
+- [x] **TRACK-04**: System prevents duplicate tracks across categories
+- [x] **TRACK-05**: System skips artists with no Spotify match
 
 ### Playlist Creation
 
@@ -88,21 +88,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPUT-01 | Phase 3 | Pending |
-| INPUT-02 | Phase 3 | Pending |
-| INPUT-03 | Phase 3 | Pending |
-| INPUT-04 | Phase 3 | Pending |
-| INPUT-05 | Phase 3 | Pending |
-| INPUT-06 | Phase 3 | Pending |
-| AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
-| AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
-| TRACK-01 | Phase 4 | Pending |
-| TRACK-02 | Phase 4 | Pending |
-| TRACK-03 | Phase 4 | Pending |
-| TRACK-04 | Phase 4 | Pending |
-| TRACK-05 | Phase 4 | Pending |
+| INPUT-01 | Phase 3 | Complete |
+| INPUT-02 | Phase 3 | Complete |
+| INPUT-03 | Phase 3 | Complete |
+| INPUT-04 | Phase 3 | Complete |
+| INPUT-05 | Phase 3 | Complete |
+| INPUT-06 | Phase 3 | Complete |
+| AUTH-01 | Phase 2 | Complete |
+| AUTH-02 | Phase 2 | Complete |
+| AUTH-03 | Phase 2 | Complete |
+| AUTH-04 | Phase 2 | Complete |
+| TRACK-01 | Phase 4 | Complete |
+| TRACK-02 | Phase 4 | Complete |
+| TRACK-03 | Phase 4 | Complete |
+| TRACK-04 | Phase 4 | Complete |
+| TRACK-05 | Phase 4 | Complete |
 | PLAYLIST-01 | Phase 5 | Pending |
 | PLAYLIST-02 | Phase 5 | Pending |
 | PLAYLIST-03 | Phase 5 | Pending |
@@ -123,4 +123,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-01-24*
-*Last updated: 2026-01-25 after Phase 1 completion*
+*Last updated: 2026-01-27 after Phase 4 completion*
