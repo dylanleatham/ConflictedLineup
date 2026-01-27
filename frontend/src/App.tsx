@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './auth';
 import { Header } from './components/Header';
@@ -32,6 +32,7 @@ function App() {
       <Routes>
         <Route path="/" element={<UploadPage />} />
         <Route path="/track-selection" element={<TrackSelectionPage />} />
+        <Route path="/callback" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
