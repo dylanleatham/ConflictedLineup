@@ -27,7 +27,7 @@ public class SpotifyTrackService : ISpotifyTrackService
     private readonly ISpotifyUserLibraryService _userLibraryService;
     private readonly ILogger<SpotifyTrackService> _logger;
     private const int MaxRetries = 3;
-    private const int DelayBetweenArtistsMs = 200; // Prevent rate limiting
+    private const int DelayBetweenArtistsMs = 1000; // 1 second between artists to prevent rate limiting
 
     public SpotifyTrackService(
         ISpotifySearchService searchService,
