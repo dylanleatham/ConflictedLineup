@@ -58,8 +58,7 @@ public class SpotifyTrackService : ISpotifyTrackService
         }
         var userId = currentUser.Id;
 
-        _logger.LogInformation("Starting track selection for {Count} artists: [{Artists}]",
-            artistNames.Count, string.Join(", ", artistNames));
+        _logger.LogInformation("Starting track selection for {Count} artists", artistNames.Count);
 
         var artists = new List<ArtistTrackResult>();
         var skipped = new List<SkippedArtist>();
@@ -69,16 +68,11 @@ public class SpotifyTrackService : ISpotifyTrackService
         {
             var artistName = artistNames[i];
 
-            _logger.LogInformation("Processing artist {Index}/{Total}: '{ArtistName}'",
+            _logger.LogDebug("Processing artist {Index}/{Total}: '{ArtistName}'",
                 i + 1, artistNames.Count, artistName);
 
             // Step 1: Search for artist
             var searchResult = await _searchService.SearchArtistAsync(spotify, artistName);
-
-            _logger.LogInformation("Search for '{SearchedName}' returned: {FoundName} (ID: {ArtistId})",
-                artistName,
-                searchResult?.ArtistName ?? "NULL",
-                searchResult?.ArtistId ?? "NULL");
 
             if (searchResult == null)
             {
