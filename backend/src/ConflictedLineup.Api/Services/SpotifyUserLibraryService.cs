@@ -21,9 +21,9 @@ public class SpotifyUserLibraryService : ISpotifyUserLibraryService
     private const int MaxRetries = 3;
     private const string Market = "US";
     private const int MaxFamiliarTracks = 3;
-    private const int MaxSavedTracksToScan = 500;
-    private const int MaxPlaylistsToScan = 50;
-    private const int MaxTracksPerPlaylist = 200;
+    private const int MaxSavedTracksToScan = 100; // Reduced to prevent rate limits
+    private const int MaxPlaylistsToScan = 10;   // Reduced to prevent rate limits
+    private const int MaxTracksPerPlaylist = 100;
 
     public SpotifyUserLibraryService(ILogger<SpotifyUserLibraryService> logger)
     {
@@ -34,27 +34,42 @@ public class SpotifyUserLibraryService : ISpotifyUserLibraryService
     {
         var familiarTracks = new List<TrackInfo>();
 
-        // Step 1: Scan saved tracks first
-        var savedTracks = await ScanSavedTracksAsync(spotify, artistId);
-        familiarTracks.AddRange(savedTracks);
-
-        _logger.LogDebug("Found {Count} familiar tracks from saved library for artist {ArtistId}",
-            familiarTracks.Count, artistId);
-
-        // Step 2: If fewer than 3 found, scan user's owned playlists
-        if (familiarTracks.Count < MaxFamiliarTracks)
+        try
         {
-            var playlistTracks = await ScanUserPlaylistsAsync(
-                spotify,
-                artistId,
-                userId,
-                MaxFamiliarTracks - familiarTracks.Count,
-                familiarTracks.Select(t => t.SpotifyTrackId).ToHashSet());
+            // Step 1: Scan saved tracks first
+            var savedTracks = await ScanSavedTracksAsync(spotify, artistId);
+            familiarTracks.AddRange(savedTracks);
 
-            familiarTracks.AddRange(playlistTracks);
-
-            _logger.LogDebug("Total familiar tracks after playlist scan: {Count} for artist {ArtistId}",
+            _logger.LogDebug("Found {Count} familiar tracks from saved library for artist {ArtistId}",
                 familiarTracks.Count, artistId);
+
+            // Step 2: If fewer than 3 found, scan user's owned playlists
+            if (familiarTracks.Count < MaxFamiliarTracks)
+            {
+                var playlistTracks = await ScanUserPlaylistsAsync(
+                    spotify,
+                    artistId,
+                    userId,
+                    MaxFamiliarTracks - familiarTracks.Count,
+                    familiarTracks.Select(t => t.SpotifyTrackId).ToHashSet());
+
+                familiarTracks.AddRange(playlistTracks);
+
+                _logger.LogDebug("Total familiar tracks after playlist scan: {Count} for artist {ArtistId}",
+                    familiarTracks.Count, artistId);
+            }
+        }
+        catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            // Gracefully degrade - if rate limited during library scan, skip familiar tracks
+            _logger.LogWarning("Rate limited while scanning library for artist {ArtistId}, skipping familiar tracks", artistId);
+            return new List<TrackInfo>();
+        }
+        catch (Exception ex)
+        {
+            // Log but don't fail - familiar tracks are a nice-to-have
+            _logger.LogWarning(ex, "Error scanning library for artist {ArtistId}, skipping familiar tracks", artistId);
+            return new List<TrackInfo>();
         }
 
         return familiarTracks;
