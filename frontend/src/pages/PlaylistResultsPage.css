@@ -1,0 +1,181 @@
+.results-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.grid-full-width {
+  grid-column: 1 / -1;
+}
+
+/* Desktop layout: artists 2/3, skipped 1/3 */
+@media (min-width: 960px) {
+  .results-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .grid-artists {
+    grid-column: 1;
+  }
+
+  .grid-skipped {
+    grid-column: 2;
+  }
+}
+
+/* Success card - Spotify green theme */
+.success-card {
+  background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+  color: white;
+  text-align: center;
+}
+
+.success-content {
+  padding: 32px 24px !important;
+}
+
+.success-icon {
+  font-size: 64px !important;
+  margin-bottom: 16px;
+}
+
+.success-title {
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+
+.playlist-name {
+  opacity: 0.9;
+  margin-bottom: 8px !important;
+}
+
+.playlist-stats {
+  opacity: 0.8;
+  margin-bottom: 24px !important;
+}
+
+.open-spotify-button {
+  background-color: white !important;
+  color: #1DB954 !important;
+  font-weight: 600 !important;
+  padding: 12px 32px !important;
+  border-radius: 24px !important;
+}
+
+.open-spotify-button:hover {
+  background-color: #f0f0f0 !important;
+}
+
+/* Artists card */
+.artists-card {
+  background-color: #282828;
+  color: white;
+}
+
+.section-title {
+  color: white;
+  font-weight: 600 !important;
+}
+
+.artist-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.artist-list-item {
+  padding: 8px 0 !important;
+}
+
+.artist-check-icon {
+  color: #1DB954;
+  margin-right: 12px;
+  font-size: 20px !important;
+}
+
+/* Skipped card */
+.skipped-card {
+  background-color: #383838;
+  color: white;
+}
+
+.skipped-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.skipped-list-item {
+  padding: 8px 0 !important;
+}
+
+.skipped-icon {
+  color: #f59e0b;
+  margin-right: 12px;
+  font-size: 20px !important;
+}
+
+/* MUI overrides for dark theme */
+.artists-card .MuiListItemText-primary,
+.skipped-card .MuiListItemText-primary {
+  color: white;
+}
+
+.artists-card .MuiListItemText-secondary,
+.skipped-card .MuiListItemText-secondary {
+  color: #b3b3b3;
+}
+
+.artists-card .MuiDivider-root,
+.skipped-card .MuiDivider-root {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Action section */
+.action-section {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.start-new-button {
+  border-color: #1DB954 !important;
+  color: #1DB954 !important;
+  padding: 12px 32px !important;
+  border-radius: 24px !important;
+}
+
+.start-new-button:hover {
+  background-color: rgba(29, 185, 84, 0.1) !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .results-page {
+    padding: 16px 12px;
+  }
+
+  .success-content {
+    padding: 24px 16px !important;
+  }
+
+  .success-icon {
+    font-size: 48px !important;
+  }
+
+  .success-title {
+    font-size: 1.5rem !important;
+  }
+
+  .artist-list {
+    max-height: 300px;
+  }
+
+  .skipped-list {
+    max-height: 200px;
+  }
+}

@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { LoginPage } from './components/LoginPage';
 import { UploadPage } from './pages/UploadPage';
 import { TrackSelectionPage } from './pages/TrackSelectionPage';
+import { PlaylistResultsPage } from './pages/PlaylistResultsPage';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,6 +33,7 @@ function App() {
       <Routes>
         <Route path="/" element={<UploadPage />} />
         <Route path="/track-selection" element={<TrackSelectionPage />} />
+        <Route path="/results" element={<PlaylistResultsPage />} />
         <Route path="/callback" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
