@@ -30,6 +30,13 @@ builder.Services.AddControllers();
 // Register services
 builder.Services.AddScoped<IClaudeService, ClaudeService>();
 
+// Register Spotify services
+builder.Services.AddScoped<ISpotifySearchService, SpotifySearchService>();
+builder.Services.AddScoped<ISpotifyTopTracksService, SpotifyTopTracksService>();
+builder.Services.AddScoped<ISpotifyRecentReleasesService, SpotifyRecentReleasesService>();
+builder.Services.AddScoped<ISpotifyUserLibraryService, SpotifyUserLibraryService>();
+builder.Services.AddScoped<ISpotifyTrackService, SpotifyTrackService>();
+
 var app = builder.Build();
 
 app.UseCors();
