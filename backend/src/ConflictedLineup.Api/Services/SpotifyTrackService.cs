@@ -92,41 +92,23 @@ public class SpotifyTrackService : ISpotifyTrackService
 
             var artistId = searchResult.ArtistId;
 
-            // Step 2: Fetch tracks from all sources
-            var familiarTracks = await _userLibraryService.GetFamiliarTracksAsync(spotify, artistId, userId);
+            // Simplified: Only fetch top 5 tracks per artist (minimize API calls)
+            // TODO: Re-enable familiar tracks and recent releases once rate limiting is resolved
             var topTracks = await _topTracksService.GetTopTracksAsync(spotify, artistId);
-            var recentTracks = await _recentReleasesService.GetRecentTracksAsync(spotify, artistId);
-
-            // Step 3: Handle backfill if no recent releases
-            // If recent tracks < 3, fetch additional top tracks to backfill (up to 6 total from top)
-            if (recentTracks.Count < 3 && topTracks.Count >= 3)
-            {
-                // Get more top tracks for backfill - we need to re-fetch to get more than 3
-                var additionalTopTracks = await GetAdditionalTopTracksForBackfill(
-                    spotify, artistId, 6 - topTracks.Count, topTracks);
-                topTracks.AddRange(additionalTopTracks);
-                _logger.LogDebug("Backfilled top tracks to {Count} for artist {ArtistId} (no recent releases)",
-                    topTracks.Count, artistId);
-            }
-
-            // Step 4: Deduplicate across categories
-            // Priority: familiar > top > recent (per RESEARCH.md)
-            var (dedupedFamiliar, dedupedTop, dedupedRecent) =
-                DeduplicateTracks(familiarTracks, topTracks, recentTracks);
 
             var result = new ArtistTrackResult(
                 ArtistName: searchResult.ArtistName,
                 SpotifyArtistId: artistId,
-                FamiliarTracks: dedupedFamiliar,
-                TopTracks: dedupedTop,
-                RecentTracks: dedupedRecent
+                FamiliarTracks: new List<TrackInfo>(),  // Disabled for now
+                TopTracks: topTracks,
+                RecentTracks: new List<TrackInfo>()     // Disabled for now
             );
 
             artists.Add(result);
 
             _logger.LogInformation(
-                "Selected tracks for {ArtistName}: {Familiar} familiar, {Top} top, {Recent} recent",
-                searchResult.ArtistName, dedupedFamiliar.Count, dedupedTop.Count, dedupedRecent.Count);
+                "Selected {Count} top tracks for {ArtistName}",
+                topTracks.Count, searchResult.ArtistName);
 
             // Report progress
             progress?.Report(new ArtistProgressUpdate(
