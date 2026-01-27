@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Alert, CircularProgress } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { EditableArtistList } from '../components/EditableArtistList';
@@ -8,6 +9,7 @@ import { validateImageFile, optimizeImage } from '../utils/imageValidation';
 import './UploadPage.css';
 
 export function UploadPage() {
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
 
   // Input state
@@ -138,8 +140,7 @@ export function UploadPage() {
   };
 
   const handleContinue = () => {
-    console.log('Continue with artists:', editedArtists);
-    alert(`Ready to proceed with ${editedArtists.length} artists!\n\n(Track selection coming in Phase 4)`);
+    navigate('/track-selection', { state: { artists: editedArtists } });
   };
 
   // Years for dropdown: next year through 10 years ago

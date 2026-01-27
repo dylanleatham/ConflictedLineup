@@ -1,8 +1,10 @@
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './auth';
 import { Header } from './components/Header';
 import { LoginPage } from './components/LoginPage';
 import { UploadPage } from './pages/UploadPage';
+import { TrackSelectionPage } from './pages/TrackSelectionPage';
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -23,11 +25,14 @@ function App() {
     return <LoginPage />;
   }
 
-  // Show Header and UploadPage when authenticated
+  // Show Header and routed pages when authenticated
   return (
     <div className="app-container">
       <Header />
-      <UploadPage />
+      <Routes>
+        <Route path="/" element={<UploadPage />} />
+        <Route path="/track-selection" element={<TrackSelectionPage />} />
+      </Routes>
     </div>
   );
 }
