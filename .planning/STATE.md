@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 ## Current Position
 
 Phase: 4 of 5 (Track Selection)
-Plan: 1 of 4 complete (04-01)
+Plan: 2 of 4 complete (04-02)
 Status: In progress
-Last activity: 2026-01-26 — Completed 04-01-PLAN.md (foundation setup)
+Last activity: 2026-01-27 — Completed 04-02-PLAN.md (Spotify services)
 
-Progress: [███████████████░░░░░] 83% (15/18 known plans)
+Progress: [████████████████░░░░] 89% (16/18 known plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15
+- Total plans completed: 16
 - Average duration: 9 min
-- Total execution time: 2.3 hours
+- Total execution time: 2.4 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [███████████████░░░░░] 83% (15
 | 01-skeleton-deployment | 5/5 | 44 min | 9 min |
 | 02-spotify-authentication | 4/4 | 28 min | 7 min |
 | 03-artist-extraction | 5/5 | 63 min | 13 min |
-| 04-track-selection | 1/4 | 3 min | 3 min |
+| 04-track-selection | 2/4 | 6 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (3min), 03-04 (8min), 03-05 (45min iterative), 04-01 (3min)
-- Trend: 04-01 was straightforward foundation setup
+- Last 5 plans: 03-04 (8min), 03-05 (45min iterative), 04-01 (3min), 04-02 (3min)
+- Trend: Spotify services created quickly with clean patterns
 
 *Updated after each plan completion*
 
@@ -121,6 +121,12 @@ Recent decisions affecting current work:
 - OAuth scopes extended with user-library-read and playlist-read-collaborative
 - C# records for all track selection DTOs
 
+**From 04-02 execution:**
+- ISpotifyClient parameter injection: Orchestrator controls token, services accept client as parameter
+- First Spotify search result trust per CONTEXT.md algorithm decision
+- Singles prioritized over album tracks via 90-day date comparison and popularity sorting
+- Rate limiting pattern: ExecuteWithRetryAsync with Retry-After header parsing, max 3 retries
+
 ### Pending Todos
 
 None yet.
@@ -138,7 +144,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-01-26
-Stopped at: Completed 04-01-PLAN.md - Foundation setup for track selection
+Last session: 2026-01-27
+Stopped at: Completed 04-02-PLAN.md - Spotify services (search, top tracks, recent releases)
 Resume file: None
-Next: Execute 04-02-PLAN.md - Track Selection Service
+Next: Execute 04-03-PLAN.md - Track Selection Orchestrator
