@@ -125,8 +125,16 @@ export function TrackSelectionPage() {
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  // Get artists from navigation state
-  const artists = (location.state as { artists?: ArtistInfo[] })?.artists;
+  // Get artists and festival context from navigation state
+  const navigationState = location.state as {
+    artists?: ArtistInfo[];
+    festivalName?: string;
+    year?: number;
+  } | undefined;
+
+  const artists = navigationState?.artists;
+  const festivalName = navigationState?.festivalName;
+  const year = navigationState?.year;
   const artistNames = artists?.map((a) => a.name) || [];
 
   const [loading, setLoading] = useState(true);
@@ -228,7 +236,7 @@ export function TrackSelectionPage() {
       {result && !loading && (
         <div className="results-container">
           <div className="results-summary">
-            <h1>Track Selection Complete</h1>
+            <h1>{festivalName ? `${festivalName}${year ? ` ${year}` : ''}` : 'Track Selection Complete'}</h1>
             <p>
               Found <strong>{totalTracks} tracks</strong> from{' '}
               <strong>{result.artists.length} artists</strong>

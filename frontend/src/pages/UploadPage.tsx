@@ -140,7 +140,13 @@ export function UploadPage() {
   };
 
   const handleContinue = () => {
-    navigate('/track-selection', { state: { artists: editedArtists } });
+    navigate('/track-selection', {
+      state: {
+        artists: editedArtists,
+        festivalName: result?.festivalName || festivalName || undefined,
+        year: year,
+      }
+    });
   };
 
   // Years for dropdown: next year through 10 years ago
