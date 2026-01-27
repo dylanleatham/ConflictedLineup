@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Skeleton Deployment** - End-to-end infrastructure deployed before features
 - [x] **Phase 2: Spotify Authentication** - OAuth working in production environment
-- [ ] **Phase 3: Artist Extraction** - AI-powered poster parsing and festival lookup
+- [x] **Phase 3: Artist Extraction** - AI-powered poster parsing and festival lookup
 - [ ] **Phase 4: Track Selection** - Personalized curation with familiar + top + recent tracks
 - [ ] **Phase 5: Playlist Creation & Results** - Complete workflow from input to Spotify playlist
 
@@ -70,11 +70,11 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 03-01-PLAN.md — Backend API with Claude SDK (extraction endpoints, prompt files)
-- [ ] 03-02-PLAN.md — Frontend MUI setup and editable chip list component
-- [ ] 03-03-PLAN.md — Poster upload UI (file picker, preview, extraction)
-- [ ] 03-04-PLAN.md — Festival search UI (autocomplete, web search)
-- [ ] 03-05-PLAN.md — Integration and end-to-end verification
+- [x] 03-01-PLAN.md — Backend API with Claude SDK (extraction endpoints, prompt files)
+- [x] 03-02-PLAN.md — Frontend MUI setup and editable chip list component
+- [x] 03-03-PLAN.md — Poster upload UI (file picker, preview, extraction)
+- [x] 03-04-PLAN.md — Festival search UI (autocomplete, web search)
+- [x] 03-05-PLAN.md — Integration and end-to-end verification
 
 ### Phase 4: Track Selection
 **Goal**: System selects personalized tracks for each artist using familiar + top + recent logic
@@ -86,10 +86,13 @@ Plans:
   3. System identifies 3 familiar tracks per artist from user's saved tracks and playlists
   4. Duplicate tracks are excluded when same song appears in multiple categories
   5. Artists without Spotify matches are skipped and tracked separately
-**Plans**: TBD
+**Plans**: 4 plans in 4 waves
 
 Plans:
-- [ ] 04-01: [TBD during planning]
+- [ ] 04-01-PLAN.md — OAuth scopes update and SpotifyAPI-NET setup with models
+- [ ] 04-02-PLAN.md — Core Spotify services (search, top tracks, recent releases)
+- [ ] 04-03-PLAN.md — User library service and track selection orchestrator
+- [ ] 04-04-PLAN.md — API endpoint and frontend track selection page
 
 ### Phase 5: Playlist Creation & Results
 **Goal**: Users receive complete Spotify playlist with visibility into included and skipped artists
@@ -114,10 +117,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Skeleton Deployment | 5/5 | ✓ Complete | 2026-01-25 |
-| 2. Spotify Authentication | 4/4 | ✓ Complete | 2026-01-26 |
-| 3. Artist Extraction | 0/5 | Planned | - |
-| 4. Track Selection | 0/TBD | Not started | - |
+| 1. Skeleton Deployment | 5/5 | Complete | 2026-01-25 |
+| 2. Spotify Authentication | 4/4 | Complete | 2026-01-26 |
+| 3. Artist Extraction | 5/5 | Complete | 2026-01-26 |
+| 4. Track Selection | 0/4 | Planned | - |
 | 5. Playlist Creation & Results | 0/TBD | Not started | - |
 
 ---
