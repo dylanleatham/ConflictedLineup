@@ -105,10 +105,12 @@ Plans:
   4. User sees list of artists successfully included in playlist with track counts
   5. User sees list of artists that were skipped with reason (no Spotify match)
   6. Results page is mobile-responsive and displays correctly on phone screens
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves
 
 Plans:
-- [ ] 05-01: [TBD during planning]
+- [ ] 05-01-PLAN.md — Backend playlist service and API endpoint
+- [ ] 05-02-PLAN.md — Frontend results page and context propagation
+- [ ] 05-03-PLAN.md — End-to-end verification checkpoint
 
 ## Progress
 
@@ -121,7 +123,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Spotify Authentication | 4/4 | Complete | 2026-01-26 |
 | 3. Artist Extraction | 5/5 | Complete | 2026-01-26 |
 | 4. Track Selection | 4/4 | Complete | 2026-01-27 |
-| 5. Playlist Creation & Results | 0/TBD | Not started | - |
+| 5. Playlist Creation & Results | 0/3 | Not started | - |
 
 ---
 *Roadmap created: 2026-01-24*
