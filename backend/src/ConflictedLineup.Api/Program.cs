@@ -36,6 +36,7 @@ builder.Services.AddScoped<ISpotifyTopTracksService, SpotifyTopTracksService>();
 builder.Services.AddScoped<ISpotifyRecentReleasesService, SpotifyRecentReleasesService>();
 builder.Services.AddScoped<ISpotifyUserLibraryService, SpotifyUserLibraryService>();
 builder.Services.AddScoped<ISpotifyTrackService, SpotifyTrackService>();
+builder.Services.AddScoped<ISpotifyPlaylistService, SpotifyPlaylistService>();
 
 var app = builder.Build();
 
