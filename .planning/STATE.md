@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-01-24)
 
 **Core value:** Users can instantly turn any festival lineup into a personalized discovery playlist without manual artist-by-artist searching.
-**Current focus:** Phase 2 - Spotify Authentication (Complete)
+**Current focus:** Phase 4 - Track Selection & Playlist Creation (In Progress)
 
 ## Current Position
 
-Phase: 3 of 5 (Artist Extraction) - COMPLETE
-Plan: 5 of 5 complete (03-01, 03-02, 03-03, 03-04, 03-05)
-Status: Ready for Phase 4
-Last activity: 2026-01-26 — Completed Phase 3 (iterative development)
+Phase: 4 of 5 (Track Selection)
+Plan: 1 of 4 complete (04-01)
+Status: In progress
+Last activity: 2026-01-26 — Completed 04-01-PLAN.md (foundation setup)
 
-Progress: [████████████████████] 100% (14/14 known plans)
+Progress: [███████████████░░░░░] 83% (15/18 known plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 10 min
-- Total execution time: 2.25 hours
+- Total plans completed: 15
+- Average duration: 9 min
+- Total execution time: 2.3 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [████████████████████] 100% (1
 | 01-skeleton-deployment | 5/5 | 44 min | 9 min |
 | 02-spotify-authentication | 4/4 | 28 min | 7 min |
 | 03-artist-extraction | 5/5 | 63 min | 13 min |
+| 04-track-selection | 1/4 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (4min), 03-02 (3min), 03-03 (3min), 03-04 (8min), 03-05 (45min iterative)
-- Trend: 03-05 was iterative development with significant scope changes (web search, UI redesign)
+- Last 5 plans: 03-03 (3min), 03-04 (8min), 03-05 (45min iterative), 04-01 (3min)
+- Trend: 04-01 was straightforward foundation setup
 
 *Updated after each plan completion*
 
@@ -115,6 +116,11 @@ Recent decisions affecting current work:
 - Error alerts include fallback action buttons for seamless mode switching
 - Search status text shows during API calls for user feedback
 
+**From 04-01 execution:**
+- Use SpotifyAPI.Web 7.2.1 for type-safe Spotify API access
+- OAuth scopes extended with user-library-read and playlist-read-collaborative
+- C# records for all track selection DTOs
+
 ### Pending Todos
 
 None yet.
@@ -133,6 +139,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-26
-Stopped at: Phase 3 complete - Artist Extraction workflow with web search
+Stopped at: Completed 04-01-PLAN.md - Foundation setup for track selection
 Resume file: None
-Next: Plan Phase 4 - Track Selection & Playlist Creation
+Next: Execute 04-02-PLAN.md - Track Selection Service
