@@ -1,144 +1,314 @@
-import { useState } from 'react';
-import { Alert } from '@mui/material';
-import { PosterUpload } from '../components/PosterUpload';
-import { FestivalSearch } from '../components/FestivalSearch';
+import { useState, useRef } from 'react';
+import { Alert, CircularProgress } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { EditableArtistList } from '../components/EditableArtistList';
 import { ArtistInfo, ArtistExtractionResult } from '../types/extraction';
+import { extractFromPoster, searchFestivalLineup } from '../services/extractionApi';
+import { validateImageFile, optimizeImage } from '../utils/imageValidation';
 import './UploadPage.css';
 
-type Mode = 'upload' | 'search';
-
-interface ExtractionResult {
-  artists: ArtistInfo[];
-  warning?: string;
-  festivalName?: string;
-  year?: number;
-  source?: 'web' | 'image';
-  sourceUrl?: string;
-  sources?: string[];
-}
-
 export function UploadPage() {
-  const [mode, setMode] = useState<Mode>('upload');
-  const [result, setResult] = useState<ExtractionResult | null>(null);
+  const currentYear = new Date().getFullYear();
+
+  // Input state
+  const [festivalName, setFestivalName] = useState('');
+  const [year, setYear] = useState(currentYear);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+
+  // Processing state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [statusText, setStatusText] = useState('');
+
+  // Fallback state - show poster upload when search fails
+  const [showPosterFallback, setShowPosterFallback] = useState(false);
+
+  // Result state
+  const [result, setResult] = useState<ArtistExtractionResult | null>(null);
   const [editedArtists, setEditedArtists] = useState<ArtistInfo[]>([]);
 
-  const handlePosterComplete = (extractionResult: ArtistExtractionResult) => {
-    setResult({
-      artists: extractionResult.artists,
-      warning: extractionResult.warning,
-      festivalName: extractionResult.festivalName,
-      source: extractionResult.source,
-      sourceUrl: extractionResult.sourceUrl,
-      sources: extractionResult.sourceUrl ? [extractionResult.sourceUrl] : undefined
-    });
-    setEditedArtists(extractionResult.artists);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const canSearch = festivalName.trim().length > 0;
+  const canExtractFromPoster = posterFile !== null;
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error!);
+      return;
+    }
+
+    setPosterFile(file);
+    setError(null);
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => setPosterPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
   };
 
-  const handleSearchComplete = (
-    artists: ArtistInfo[],
-    festivalName: string,
-    year: number,
-    sources: string[]
-  ) => {
-    setResult({ artists, festivalName, year, sources });
-    setEditedArtists(artists);
+  const handleRemovePoster = () => {
+    setPosterFile(null);
+    setPosterPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!canSearch) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      setStatusText(`Searching for ${festivalName} ${year} lineup...`);
+      const searchResult = await searchFestivalLineup(festivalName, year);
+
+      const extractionResult: ArtistExtractionResult = {
+        artists: searchResult.artists,
+        festivalName: searchResult.festivalName,
+        source: 'web',
+        sourceUrl: searchResult.sources[0] || undefined,
+      };
+
+      if (extractionResult.artists.length === 0) {
+        setError('No artists found for this festival.');
+        setShowPosterFallback(true);
+        setStatusText('');
+        return;
+      }
+
+      setResult(extractionResult);
+      setEditedArtists(extractionResult.artists);
+      setStatusText('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
+      setShowPosterFallback(true);
+      setStatusText('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExtractFromPoster = async () => {
+    if (!canExtractFromPoster) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      setStatusText('Analyzing poster...');
+      const base64Image = await optimizeImage(posterFile!);
+      const extractionResult = await extractFromPoster(base64Image, posterFile!.type);
+
+      if (extractionResult.artists.length === 0) {
+        setError('No artists found in poster. Please try a clearer image.');
+        setStatusText('');
+        return;
+      }
+
+      setResult(extractionResult);
+      setEditedArtists(extractionResult.artists);
+      setStatusText('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Extraction failed');
+      setStatusText('');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStartOver = () => {
     setResult(null);
     setEditedArtists([]);
+    setFestivalName('');
+    setPosterFile(null);
+    setPosterPreview(null);
+    setError(null);
+    setShowPosterFallback(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleContinue = () => {
-    // TODO: Navigate to track selection page in Phase 4
     console.log('Continue with artists:', editedArtists);
-    alert(`Ready to proceed with ${editedArtists.length} artists!\n\n(Track selection will be implemented in Phase 4)`);
+    alert(`Ready to proceed with ${editedArtists.length} artists!\n\n(Track selection coming in Phase 4)`);
   };
 
-  const switchToSearch = () => setMode('search');
-  const switchToUpload = () => setMode('upload');
+  // Years for dropdown: next year through 10 years ago
+  const years = Array.from({ length: 12 }, (_, i) => currentYear + 1 - i);
 
   return (
     <div className="upload-page">
-      <div className="upload-header">
-        <h1>Create Your Festival Playlist</h1>
-        <p className="subtitle">Upload a poster or search for a festival</p>
-      </div>
-
-      {!result && (
+      {!result ? (
         <>
-          <div className="mode-tabs">
-            <button
-              className={`mode-tab ${mode === 'upload' ? 'active' : ''}`}
-              onClick={() => setMode('upload')}
-            >
-              Upload Poster
-            </button>
-            <button
-              className={`mode-tab ${mode === 'search' ? 'active' : ''}`}
-              onClick={() => setMode('search')}
-            >
-              Search Festival
-            </button>
+          <div className="upload-header">
+            <h1>Turn Any Festival Lineup Into a Playlist</h1>
+            <p className="subtitle">
+              Enter a festival name and we'll find the lineup and build you a personalized Spotify playlist.
+            </p>
           </div>
 
-          <div className="component-container">
-            {mode === 'upload' ? (
-              <PosterUpload
-                onExtractionComplete={handlePosterComplete}
-                onSwitchToSearch={switchToSearch}
-              />
-            ) : (
-              <FestivalSearch
-                onSearchComplete={handleSearchComplete}
-                onSwitchToUpload={switchToUpload}
-              />
+          <div className="input-card">
+            {/* Festival Name Input */}
+            <div className="input-group">
+              <label className="input-label">Festival Name</label>
+              <div className="festival-input-row">
+                <input
+                  type="text"
+                  className="text-input"
+                  placeholder="e.g., Coachella, Bonnaroo, EDC Las Vegas"
+                  value={festivalName}
+                  onChange={(e) => setFestivalName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  disabled={loading}
+                />
+                <select
+                  className="year-select"
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                  disabled={loading}
+                >
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {/* Status text */}
+            {statusText && (
+              <div className="status-text">{statusText}</div>
+            )}
+
+            {/* Search button */}
+            {!showPosterFallback && (
+              <button
+                className="search-button"
+                onClick={handleSearch}
+                disabled={!canSearch || loading}
+              >
+                {loading ? (
+                  <>
+                    <CircularProgress size={20} color="inherit" />
+                    Searching...
+                  </>
+                ) : (
+                  'Find Lineup'
+                )}
+              </button>
+            )}
+
+            {/* Poster fallback - shown only after search fails */}
+            {showPosterFallback && (
+              <div className="poster-fallback">
+                <div className="fallback-divider">
+                  <span>Can't find it? Upload a poster</span>
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleFileSelect}
+                  style={{ display: 'none' }}
+                  disabled={loading}
+                />
+
+                {!posterPreview ? (
+                  <div
+                    className="poster-dropzone"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <CloudUploadIcon className="upload-icon" />
+                    <span>Click to upload poster image</span>
+                    <span className="file-hint">PNG, JPG, or WebP up to 5MB</span>
+                  </div>
+                ) : (
+                  <div className="poster-preview-container">
+                    <img src={posterPreview} alt="Poster preview" className="poster-preview" />
+                    <button
+                      className="remove-poster-btn"
+                      onClick={handleRemovePoster}
+                      disabled={loading}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+
+                <div className="fallback-actions">
+                  <button
+                    className="extract-button"
+                    onClick={handleExtractFromPoster}
+                    disabled={!canExtractFromPoster || loading}
+                  >
+                    {loading ? (
+                      <>
+                        <CircularProgress size={20} color="inherit" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      'Extract from Poster'
+                    )}
+                  </button>
+                  <button
+                    className="try-again-button"
+                    onClick={() => {
+                      setShowPosterFallback(false);
+                      setError(null);
+                    }}
+                    disabled={loading}
+                  >
+                    Try Different Search
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </>
-      )}
-
-      {result && (
+      ) : (
         <div className="results-section">
           <div className="results-header">
-            <h2>
-              {result.festivalName
-                ? result.festivalName
-                : 'Extracted Artists'}
-            </h2>
-            <span className="artist-count">
-              {editedArtists.length} artist{editedArtists.length !== 1 ? 's' : ''}
-              {result.source && (
-                <span className="source-indicator">
-                  {' '}(from {result.source})
-                </span>
-              )}
-            </span>
+            <h2>{result.festivalName || 'Extracted Artists'}</h2>
+            {result.source && (
+              <span className="source-badge">
+                {result.source === 'web' ? 'From web search' : 'From poster'}
+              </span>
+            )}
           </div>
 
-          {result.warning && (
-            <div className="warning-message">
-              <Alert severity="warning">{result.warning}</Alert>
+          {posterPreview && (
+            <div className="results-poster">
+              <img src={posterPreview} alt="Festival poster" />
             </div>
           )}
 
-          {result.sources && result.sources.length > 0 && (
-            <div className="sources-section">
-              <h3>Sources</h3>
-              <ul className="sources-list">
-                {result.sources.map((source, index) => (
-                  <li key={index}>
-                    {source.startsWith('http') ? (
-                      <a href={source} target="_blank" rel="noopener noreferrer">
-                        {source}
-                      </a>
-                    ) : (
-                      source
-                    )}
-                  </li>
-                ))}
-              </ul>
+          {result.warning && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {result.warning}
+            </Alert>
+          )}
+
+          {result.sourceUrl && (
+            <div className="source-link">
+              Source: <a href={result.sourceUrl} target="_blank" rel="noopener noreferrer">
+                {result.sourceUrl}
+              </a>
             </div>
           )}
 
@@ -146,6 +316,21 @@ export function UploadPage() {
             initialArtists={result.artists}
             onChange={setEditedArtists}
           />
+
+          {/* Poster fallback option on results */}
+          {!posterPreview && (
+            <div className="results-fallback">
+              <button
+                className="results-fallback-link"
+                onClick={() => {
+                  setResult(null);
+                  setShowPosterFallback(true);
+                }}
+              >
+                Artists unexpected? Upload a poster instead
+              </button>
+            </div>
+          )}
 
           <div className="continue-section">
             <button className="start-over-button" onClick={handleStartOver}>

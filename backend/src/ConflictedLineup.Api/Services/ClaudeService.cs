@@ -16,7 +16,7 @@ public class ClaudeService : IClaudeService
 {
     private readonly AnthropicClient _client;
     private readonly ILogger<ClaudeService> _logger;
-    private const string Model = "claude-sonnet-4-5-20250514";
+    private const string Model = "claude-sonnet-4-20250514";
     private const int MaxTokens = 4096;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -68,15 +68,38 @@ public class ClaudeService : IClaudeService
                 Messages = messages,
                 Model = Model,
                 MaxTokens = MaxTokens,
-                Stream = false
+                Stream = false,
+                Tools = new List<Anthropic.SDK.Common.Tool>
+                {
+                    ServerTools.GetWebSearchTool(maxUses: 5)
+                },
+                ToolChoice = new ToolChoice { Type = ToolChoiceType.Auto }
             };
 
             var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-            var responseText = response.Content.OfType<TextContent>().FirstOrDefault()?.Text
-                ?? throw new InvalidOperationException("No text response from Claude");
 
-            // Extract JSON from response (in case there's extra text)
-            responseText = ExtractJson(responseText);
+            // With web search, response may have multiple text blocks - combine them all
+            var allTextContent = response.Content
+                .OfType<TextContent>()
+                .Select(tc => tc.Text)
+                .ToList();
+
+            _logger.LogInformation("Claude response has {Count} text blocks", allTextContent.Count);
+
+            // Join all text and find JSON
+            var combinedText = string.Join("\n", allTextContent);
+            _logger.LogDebug("Combined response text: {Text}", combinedText);
+
+            var responseText = ExtractJson(combinedText);
+
+            if (string.IsNullOrWhiteSpace(responseText) || !responseText.StartsWith("{"))
+            {
+                _logger.LogError("Could not extract JSON from response. Raw text: {Text}", combinedText);
+                return new ArtistExtractionResult(
+                    Artists: new List<ArtistInfo>(),
+                    Warning: "Failed to parse Claude response - no JSON found"
+                );
+            }
 
             // Parse Claude's response format
             var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);
@@ -89,11 +112,9 @@ public class ClaudeService : IClaudeService
                 );
             }
 
-            // Map to ArtistExtractionResult with all artists marked high confidence
-            // (confidence comes from source - web is high, image extraction could vary)
-            var confidence = rawResult.Source == "web" ? "high" : "uncertain";
+            // Map to ArtistExtractionResult
             var artists = rawResult.Artists
-                .Select(name => new ArtistInfo(name, confidence))
+                .Select(name => new ArtistInfo(name, "high"))
                 .ToList();
 
             return new ArtistExtractionResult(
@@ -147,15 +168,35 @@ public class ClaudeService : IClaudeService
                 Messages = messages,
                 Model = Model,
                 MaxTokens = MaxTokens,
-                Stream = false
+                Stream = false,
+                Tools = new List<Anthropic.SDK.Common.Tool>
+                {
+                    ServerTools.GetWebSearchTool(maxUses: 5)
+                },
+                ToolChoice = new ToolChoice { Type = ToolChoiceType.Auto }
             };
 
             var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-            var responseText = response.Content.OfType<TextContent>().FirstOrDefault()?.Text
-                ?? throw new InvalidOperationException("No text response from Claude");
 
-            // Extract JSON from response
-            responseText = ExtractJson(responseText);
+            // With web search, response may have multiple text blocks - combine them all
+            var allTextContent = response.Content
+                .OfType<TextContent>()
+                .Select(tc => tc.Text)
+                .ToList();
+
+            _logger.LogInformation("Claude response has {Count} text blocks", allTextContent.Count);
+
+            // Join all text and find JSON
+            var combinedText = string.Join("\n", allTextContent);
+            _logger.LogDebug("Combined response text: {Text}", combinedText);
+
+            var responseText = ExtractJson(combinedText);
+
+            if (string.IsNullOrWhiteSpace(responseText) || !responseText.StartsWith("{"))
+            {
+                _logger.LogError("Could not extract JSON from response. Raw text: {Text}", combinedText);
+                throw new InvalidOperationException("No valid JSON found in Claude response");
+            }
 
             // Parse Claude's response format
             var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);

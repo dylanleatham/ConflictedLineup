@@ -1,62 +1,149 @@
 .editable-artist-list {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
 }
 
-.editable-artist-list .MuiAutocomplete-root {
-  background: rgba(255, 255, 255, 0.05);
+/* Add artist section - prominent at top */
+.add-artist-section {
+  margin-bottom: 1.5rem;
+}
+
+.add-artist-section .MuiTextField-root {
+  background: white;
   border-radius: 8px;
 }
 
-.editable-artist-list .MuiInputBase-root {
-  color: white;
+.add-artist-section .MuiOutlinedInput-root {
+  background: #f8f9fa;
 }
 
-.editable-artist-list .MuiInputLabel-root {
-  color: rgba(255, 255, 255, 0.7);
+.add-artist-section .MuiOutlinedInput-root:hover {
+  background: #fff;
 }
 
-.editable-artist-list .MuiInputLabel-root.Mui-focused {
-  color: #1DB954;
+.add-artist-section .MuiOutlinedInput-root.Mui-focused {
+  background: #fff;
 }
 
-.editable-artist-list .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 0.3);
+.add-artist-section .MuiOutlinedInput-notchedOutline {
+  border-color: #ddd;
 }
 
-.editable-artist-list .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-.editable-artist-list .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+.add-artist-section .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
   border-color: #1DB954;
 }
 
-.editable-artist-list .MuiFormHelperText-root {
-  color: rgba(255, 255, 255, 0.5);
+.add-artist-section .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1DB954;
 }
 
-.editable-artist-list .MuiChip-root {
-  background: rgba(29, 185, 84, 0.2);
-  color: white;
-  border: 1px solid rgba(29, 185, 84, 0.5);
-  margin: 2px;
+.add-hint {
+  display: block;
+  margin-top: 4px;
+  color: #888;
+  font-size: 0.75rem;
 }
 
-.editable-artist-list .MuiChip-root:hover {
-  background: rgba(29, 185, 84, 0.3);
+/* Artist chips container */
+.artist-chips-container {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
 }
 
-.editable-artist-list .MuiChip-deleteIcon {
-  color: rgba(255, 255, 255, 0.7);
+.chips-header {
+  color: #666;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.editable-artist-list .MuiChip-deleteIcon:hover {
-  color: white;
+.edit-hint {
+  font-size: 0.75rem;
+  color: #aaa;
+  font-weight: 400;
 }
 
-.editable-artist-list .uncertain-chip {
-  background: rgba(255, 152, 0, 0.2);
-  border-color: rgba(255, 152, 0, 0.5);
+.artist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Chip styling */
+.artist-chips .MuiChip-root {
+  background: white;
+  color: #333;
+  border: 1px solid #ddd;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.artist-chips .MuiChip-root:hover {
+  background: #f0f0f0;
+}
+
+.artist-chips .MuiChip-deleteIcon {
+  color: #999;
+}
+
+.artist-chips .MuiChip-deleteIcon:hover {
+  color: #d32f2f;
+}
+
+.artist-chips .uncertain-chip {
+  background: #fff8e1;
+  border-color: #ffb74d;
+}
+
+.artist-chips .uncertain-chip:hover {
+  background: #ffecb3;
+}
+
+/* Inline edit */
+.chip-edit-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: white;
+  border: 2px solid #1DB954;
+  border-radius: 16px;
+  padding: 2px 8px;
+}
+
+.chip-edit-input {
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  padding: 4px 0;
+  width: 120px;
+  background: transparent;
+}
+
+.chip-edit-action {
+  font-size: 18px !important;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+
+.chip-edit-action.save {
+  color: #1DB954;
+}
+
+.chip-edit-action.save:hover {
+  background: rgba(29, 185, 84, 0.1);
+}
+
+.chip-edit-action.cancel {
+  color: #999;
+}
+
+.chip-edit-action.cancel:hover {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.1);
 }
