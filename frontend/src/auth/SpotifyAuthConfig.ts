@@ -5,7 +5,7 @@ export const spotifyAuthConfig: TAuthConfig = {
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
   tokenEndpoint: 'https://accounts.spotify.com/api/token',
   redirectUri: `${window.location.origin}/callback`,
-  scope: 'user-read-private user-read-email playlist-modify-public playlist-modify-private playlist-read-private',
+  scope: 'user-read-private user-read-email playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative user-library-read',
   decodeToken: false, // CRITICAL - Spotify tokens are opaque, not JWTs
   autoLogin: false, // Show landing page first per CONTEXT.md
   storage: 'local', // Persist across browser sessions per CONTEXT.md
