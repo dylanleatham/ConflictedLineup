@@ -36,17 +36,33 @@ public class SpotifySearchService : ISpotifySearchService
             var searchRequest = new SearchRequest(SearchRequest.Types.Artist, artistName)
             {
                 Market = Market,
-                Limit = 1 // Only need first result
+                Limit = 5 // Get a few results to see what Spotify returns
             };
 
+            _logger.LogInformation("Searching Spotify for artist: '{Query}'", artistName);
+
             var searchResponse = await spotify.Search.Item(searchRequest);
+
+            // Log all results to debug the issue
+            if (searchResponse.Artists.Items != null)
+            {
+                _logger.LogInformation("Spotify returned {Count} results for '{Query}':",
+                    searchResponse.Artists.Items.Count, artistName);
+                for (int i = 0; i < searchResponse.Artists.Items.Count; i++)
+                {
+                    var a = searchResponse.Artists.Items[i];
+                    _logger.LogInformation("  [{Index}] {Name} (ID: {Id}, Followers: {Followers})",
+                        i, a.Name, a.Id, a.Followers?.Total ?? 0);
+                }
+            }
+            else
+            {
+                _logger.LogInformation("Spotify returned NULL Items for '{Query}'", artistName);
+            }
 
             if (searchResponse.Artists.Items?.Count > 0)
             {
                 var artist = searchResponse.Artists.Items[0];
-                _logger.LogDebug("Found artist '{SpotifyName}' (ID: {Id}) for search '{SearchName}'",
-                    artist.Name, artist.Id, artistName);
-
                 return new ArtistSearchResult(
                     ArtistId: artist.Id,
                     ArtistName: artist.Name,
@@ -54,7 +70,7 @@ public class SpotifySearchService : ISpotifySearchService
                 );
             }
 
-            _logger.LogDebug("No artist found for search '{ArtistName}'", artistName);
+            _logger.LogInformation("No artist found for search '{ArtistName}'", artistName);
             return null;
         });
     }
