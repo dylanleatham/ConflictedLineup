@@ -48,6 +48,10 @@ Recent decisions affecting current work:
 - Deploy skeleton first: Avoid deployment surprises when codebase is complex (affects Phase 1 priority)
 - Prompt in codebase file: User has existing tested prompt, keeps it version controlled (affects Phase 3 implementation)
 - Require Spotify auth upfront: Need playlist access for familiar tracks feature (affects Phase 2 architecture)
+
+**CRITICAL - Local Development URLs:**
+- Frontend: http://127.0.0.1:5175 (NOT 5173 — Spotify OAuth requires this exact port)
+- Backend: http://localhost:5000
 - 9 tracks per artist (3+3+3): Balance between familiar, discovery, and likely-to-be-played-live (affects Phase 4 track selection)
 
 **From 01-01 execution:**

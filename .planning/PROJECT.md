@@ -52,6 +52,12 @@ Users can instantly turn any festival lineup into a personalized discovery playl
 - **Auth:** Spotify OAuth (required for all features)
 - **Deployment Strategy:** End-to-end skeleton deployed first, then features — mitigate deployment issues early
 
+## Local Development
+
+- **Frontend URL:** http://127.0.0.1:5175 (NOT 5173 — Spotify OAuth redirect requires 5175)
+- **Backend URL:** http://localhost:5000
+- **Important:** Spotify Developer Dashboard has 127.0.0.1:5175 registered as redirect URI. Using any other port will break OAuth.
+
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
