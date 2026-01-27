@@ -8,6 +8,8 @@ import StarIcon from '@mui/icons-material/Star';
 import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import { useAuth } from '../auth';
 import { selectTracksForArtists } from '../services/trackSelectionApi';
+import { createPlaylist } from '../services/playlistApi';
+import { PlaylistResultsState } from '../types/playlist';
 import { TrackSelectionResponse, ArtistTrackResult, TrackInfo, SkippedArtist } from '../types/trackSelection';
 import { ArtistInfo } from '../types/extraction';
 import './TrackSelectionPage.css';
@@ -140,6 +142,7 @@ export function TrackSelectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackSelectionResponse | null>(null);
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
 
   // Track if we've already started fetching to prevent duplicate calls
   const hasFetched = useRef(false);
@@ -183,9 +186,34 @@ export function TrackSelectionPage() {
     navigate('/');
   };
 
-  const handleCreatePlaylist = () => {
-    // TODO: Implement in Phase 5
-    alert('Playlist creation coming in Phase 5!');
+  const handleCreatePlaylist = async () => {
+    if (!result || !token) return;
+
+    setCreatingPlaylist(true);
+    setError(null);
+
+    try {
+      const playlist = await createPlaylist(
+        festivalName || 'My Festival Playlist',
+        year,
+        result.artists,
+        token
+      );
+
+      // Navigate to results page with all context
+      const resultsState: PlaylistResultsState = {
+        playlist,
+        artists: result.artists,
+        skipped: result.skipped,
+        festivalName,
+        year,
+      };
+
+      navigate('/results', { state: resultsState });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create playlist');
+      setCreatingPlaylist(false);
+    }
   };
 
   const handleRetry = () => {
@@ -258,9 +286,16 @@ export function TrackSelectionPage() {
             <button
               className="create-playlist-button"
               onClick={handleCreatePlaylist}
-              disabled={totalTracks === 0}
+              disabled={totalTracks === 0 || creatingPlaylist}
             >
-              Create Playlist
+              {creatingPlaylist ? (
+                <>
+                  <CircularProgress size={20} color="inherit" />
+                  Creating Playlist...
+                </>
+              ) : (
+                'Create Playlist'
+              )}
             </button>
           </div>
         </div>
