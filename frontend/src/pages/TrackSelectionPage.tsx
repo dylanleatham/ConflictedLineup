@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, CircularProgress, Collapse, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -133,7 +133,10 @@ export function TrackSelectionPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackSelectionResponse | null>(null);
 
-  const fetchTracks = useCallback(async () => {
+  // Track if we've already started fetching to prevent duplicate calls
+  const hasFetched = useRef(false);
+
+  const doFetch = async () => {
     if (!token || artistNames.length === 0) {
       return;
     }
@@ -149,7 +152,7 @@ export function TrackSelectionPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, artistNames]);
+  };
 
   useEffect(() => {
     // If no artists passed, redirect back to upload page
@@ -158,8 +161,15 @@ export function TrackSelectionPage() {
       return;
     }
 
-    fetchTracks();
-  }, [artists, navigate, fetchTracks]);
+    // Only fetch once on mount
+    if (hasFetched.current) {
+      return;
+    }
+    hasFetched.current = true;
+
+    doFetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleStartOver = () => {
     navigate('/');
@@ -171,7 +181,7 @@ export function TrackSelectionPage() {
   };
 
   const handleRetry = () => {
-    fetchTracks();
+    doFetch();
   };
 
   // Calculate total tracks for summary
