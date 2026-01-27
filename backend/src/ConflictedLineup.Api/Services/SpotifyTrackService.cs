@@ -1,3 +1,4 @@
+using System.Net;
 using SpotifyAPI.Web;
 using ConflictedLineup.Api.Models;
 
@@ -25,6 +26,8 @@ public class SpotifyTrackService : ISpotifyTrackService
     private readonly ISpotifyRecentReleasesService _recentReleasesService;
     private readonly ISpotifyUserLibraryService _userLibraryService;
     private readonly ILogger<SpotifyTrackService> _logger;
+    private const int MaxRetries = 3;
+    private const int DelayBetweenArtistsMs = 200; // Prevent rate limiting
 
     public SpotifyTrackService(
         ISpotifySearchService searchService,
@@ -47,8 +50,12 @@ public class SpotifyTrackService : ISpotifyTrackService
     {
         var spotify = new SpotifyClient(accessToken);
 
-        // Get current user ID for playlist filtering
-        var currentUser = await spotify.UserProfile.Current();
+        // Get current user ID for playlist filtering (with retry for rate limiting)
+        var currentUser = await ExecuteWithRetryAsync(async () => await spotify.UserProfile.Current());
+        if (currentUser == null)
+        {
+            throw new InvalidOperationException("Failed to get current user profile from Spotify");
+        }
         var userId = currentUser.Id;
 
         _logger.LogInformation("Starting track selection for {Count} artists", artistNames.Count);
@@ -128,6 +135,12 @@ public class SpotifyTrackService : ISpotifyTrackService
                 ArtistName: searchResult.ArtistName,
                 Result: result
             ));
+
+            // Small delay between artists to prevent rate limiting
+            if (i < artistNames.Count - 1)
+            {
+                await Task.Delay(DelayBetweenArtistsMs);
+            }
         }
 
         _logger.LogInformation(
@@ -184,9 +197,10 @@ public class SpotifyTrackService : ISpotifyTrackService
         try
         {
             var request = new ArtistsTopTracksRequest("US");
-            var response = await spotify.Artists.GetTopTracks(artistId, request);
+            var response = await ExecuteWithRetryAsync(async () =>
+                await spotify.Artists.GetTopTracks(artistId, request));
 
-            if (response.Tracks == null || response.Tracks.Count == 0)
+            if (response == null || response.Tracks == null || response.Tracks.Count == 0)
             {
                 return new List<TrackInfo>();
             }
@@ -215,5 +229,44 @@ public class SpotifyTrackService : ISpotifyTrackService
             _logger.LogWarning(ex, "Failed to fetch additional top tracks for backfill");
             return new List<TrackInfo>();
         }
+    }
+
+    /// <summary>
+    /// Execute a Spotify API call with retry logic for rate limiting (429 responses)
+    /// </summary>
+    private async Task<T?> ExecuteWithRetryAsync<T>(Func<Task<T>> apiCall) where T : class
+    {
+        for (int attempt = 0; attempt < MaxRetries; attempt++)
+        {
+            try
+            {
+                return await apiCall();
+            }
+            catch (APIException ex) when (ex.Response?.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                if (attempt == MaxRetries - 1)
+                {
+                    _logger.LogError("Max retries ({MaxRetries}) exceeded for Spotify API call", MaxRetries);
+                    throw;
+                }
+
+                // Read Retry-After header (in seconds), default to 5 if not present
+                var retryAfterSeconds = 5;
+                if (ex.Response?.Headers?.TryGetValue("Retry-After", out var retryAfterHeader) == true)
+                {
+                    if (int.TryParse(retryAfterHeader, out var parsed))
+                    {
+                        retryAfterSeconds = parsed;
+                    }
+                }
+
+                _logger.LogWarning("Rate limited by Spotify API. Waiting {Seconds}s before retry (attempt {Attempt}/{MaxRetries})",
+                    retryAfterSeconds, attempt + 1, MaxRetries);
+
+                await Task.Delay(TimeSpan.FromSeconds(retryAfterSeconds));
+            }
+        }
+
+        return default;
     }
 }
