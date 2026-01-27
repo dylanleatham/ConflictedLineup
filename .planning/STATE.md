@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-01-24)
 
 ## Current Position
 
-Phase: 4 of 5 (Track Selection) - COMPLETE
-Plan: 4 of 4 complete (04-01, 04-02, 04-03, 04-04)
-Status: Ready for Phase 5
-Last activity: 2026-01-27 — Completed Phase 4 (Track Selection)
+Phase: 5 of 5 (Playlist Creation & Results) - IN PROGRESS
+Plan: 1 of 2 complete (05-01)
+Status: Backend playlist creation complete, frontend results UI pending
+Last activity: 2026-01-27 — Completed 05-01-PLAN.md (Playlist Creation Backend)
 
-Progress: [████████████████████] 100% (18/18 known plans)
+Progress: [███████████████████ ] 95% (19/20 known plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18
-- Average duration: 11 min
-- Total execution time: 3.3 hours
+- Total plans completed: 19
+- Average duration: 10 min
+- Total execution time: 3.4 hours
 
 **By Phase:**
 
@@ -31,10 +31,11 @@ Progress: [████████████████████] 100% (1
 | 02-spotify-authentication | 4/4 | 28 min | 7 min |
 | 03-artist-extraction | 5/5 | 63 min | 13 min |
 | 04-track-selection | 4/4 | 59 min | 15 min |
+| 05-playlist-creation-results | 1/2 | 3 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 04-01 (3min), 04-02 (3min), 04-03 (8min), 04-04 (45min with debugging)
-- Trend: 04-04 extended due to rate limiting and search result debugging
+- Last 5 plans: 04-02 (3min), 04-03 (8min), 04-04 (45min with debugging), 05-01 (3min)
+- Trend: Fast execution for straightforward service/controller additions
 
 *Updated after each plan completion*
 
@@ -144,6 +145,13 @@ Recent decisions affecting current work:
 - 1-second delay between artists: Prevents Spotify rate limiting during batch processing
 - /callback redirect route: OAuth callback needs explicit redirect to / after completion
 
+**From 05-01 execution:**
+- Private playlists by default with "Created by Conflicted Lineup" description
+- Batch size of 100 tracks per request (Spotify API limit) with 500ms delays between batches
+- Server-side track URI extraction from ArtistTrackResult rather than passing raw URIs from frontend
+- Use ExternalUrls["spotify"] for playlist URL (not manual construction)
+- Fetch user ID from Spotify UserProfile.Current() API (avoid requiring frontend to pass it)
+
 ### Pending Todos
 
 None yet.
@@ -162,6 +170,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-01-27
-Stopped at: Phase 4 complete - Track Selection working with top 5 tracks per artist
+Stopped at: Completed 05-01-PLAN.md - Playlist Creation Backend
 Resume file: None
-Next: Plan Phase 5 - Playlist Creation & Results
+Next: Execute 05-02 - Results Display Frontend (playlist button, success state, Spotify link)
