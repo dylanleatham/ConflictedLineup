@@ -1,7 +1,7 @@
 import { PlaylistCreationRequest, PlaylistCreationResponse } from '../types/playlist';
 import { ArtistTrackResult } from '../types/trackSelection';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 /**
  * Create a Spotify playlist from track selection results
