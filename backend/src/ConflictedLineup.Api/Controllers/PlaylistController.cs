@@ -5,7 +5,7 @@ using ConflictedLineup.Api.Services;
 namespace ConflictedLineup.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/playlist")]
 public class PlaylistController : ControllerBase
 {
     private readonly ISpotifyPlaylistService _playlistService;
