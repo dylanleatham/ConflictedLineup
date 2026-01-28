@@ -10,6 +10,10 @@ export const spotifyAuthConfig: TAuthConfig = {
   autoLogin: false, // Show landing page first per CONTEXT.md
   storage: 'local', // Persist across browser sessions per CONTEXT.md
   onRefreshTokenExpire: () => {
+    // Clear tokens from storage before redirecting to prevent refresh loop
+    localStorage.removeItem('ROCP_token');
+    localStorage.removeItem('ROCP_refreshToken');
+    localStorage.removeItem('ROCP_idToken');
     // Redirect to login with session expired flag
     window.location.href = '/?session_expired=true';
   }
