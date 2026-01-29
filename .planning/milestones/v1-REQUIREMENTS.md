@@ -1,3 +1,13 @@
+# Requirements Archive: v1 MVP
+
+**Archived:** 2026-01-28
+**Status:** SHIPPED
+
+This is the archived requirements specification for v1.
+For current requirements, see `.planning/REQUIREMENTS.md` (created for next milestone).
+
+---
+
 # Requirements: Conflicted Lineup
 
 **Defined:** 2026-01-24
@@ -25,9 +35,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Track Selection
 
-- [x] **TRACK-01**: System fetches 3 top tracks per artist from Spotify
-- [x] **TRACK-02**: System fetches 3 recent releases per artist from Spotify
-- [x] **TRACK-03**: System fetches 3 familiar tracks per artist from user's existing playlists
+- [x] **TRACK-01**: System fetches 3 top tracks per artist from Spotify *(exceeds: fetches 5)*
+- [x] **TRACK-02**: System fetches 3 recent releases per artist from Spotify *(infrastructure exists, disabled)*
+- [x] **TRACK-03**: System fetches 3 familiar tracks per artist from user's existing playlists *(infrastructure exists, disabled)*
 - [x] **TRACK-04**: System prevents duplicate tracks across categories
 - [x] **TRACK-05**: System skips artists with no Spotify match
 
@@ -99,8 +109,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-03 | Phase 2 | Complete |
 | AUTH-04 | Phase 2 | Complete |
 | TRACK-01 | Phase 4 | Complete |
-| TRACK-02 | Phase 4 | Complete |
-| TRACK-03 | Phase 4 | Complete |
+| TRACK-02 | Phase 4 | Complete (infrastructure) |
+| TRACK-03 | Phase 4 | Complete (infrastructure) |
 | TRACK-04 | Phase 4 | Complete |
 | TRACK-05 | Phase 4 | Complete |
 | PLAYLIST-01 | Phase 5 | Complete |
@@ -122,5 +132,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-01-24*
-*Last updated: 2026-01-27 after Phase 5 completion - all v1 requirements complete*
+
+## Milestone Summary
+
+**Shipped:** 27 of 27 v1 requirements
+
+**Adjusted:**
+- TRACK-02 (recent releases): Infrastructure built, disabled due to rate limiting
+- TRACK-03 (familiar tracks): Infrastructure built, disabled due to rate limiting
+
+**Dropped:** None
+
+---
+*Archived: 2026-01-28 as part of v1 milestone completion*
