@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Conflicted Lineup — Design Reference</title>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&family=Permanent+Marker&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ===================
+       DESIGN TOKENS
+       =================== */
+    :root {
+      /* Void Palette */
+      --void: #0a0a0a;
+      --abyss: #141414;
+      --smoke: #1a1a1a;
+      --ash: #2a2a2a;
+      --ember: #404040;
+      
+      /* Neon Accents */
+      --neon-cyan: #00f5ff;
+      --neon-magenta: #ff00aa;
+      --toxic-green: #39ff14;
+      --blaze-orange: #ff6a00;
+      --void-purple: #8b00ff;
+      
+      /* Text */
+      --text-primary: #f0f0f0;
+      --text-secondary: #a0a0a0;
+      --text-muted: #606060;
+      
+      /* Spotify */
+      --spotify: #1db954;
+      
+      /* Fonts */
+      --font-display: 'Bebas Neue', 'Anton', sans-serif;
+      --font-accent: 'Permanent Marker', cursive;
+      --font-body: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    
+    /* ===================
+       BASE STYLES
+       =================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      padding-top: env(safe-area-inset-top, 0);
+      font-family: var(--font-body);
+      background: var(--void);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      /* Smooth scrolling */
+      scroll-behavior: smooth;
+      /* Prevent pull-to-refresh on mobile */
+      overscroll-behavior-y: contain;
+    }
+    
+    /* ===================
+       NOISE & GRADIENT
+       =================== */
+    .noise-overlay {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    .gradient-mesh {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 20% 80%, rgba(255, 0, 170, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 245, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(139, 0, 255, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    /* ===================
+       LAYOUT
+       =================== */
+    .header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--ash);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+    
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      color: var(--neon-cyan);
+    }
+    
+    .nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .nav-btn {
+      background: transparent;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 4px;
+    }
+    
+    .nav-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .nav-btn.active {
+      color: var(--neon-cyan);
+      background: rgba(0, 245, 255, 0.1);
+    }
+    
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+    
+    section {
+      animation: fadeUp 0.6s ease-out forwards;
+    }
+    
+    /* ===================
+       HERO
+       =================== */
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 10vw, 6rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin: 0 0 1rem 0;
+      text-align: center;
+    }
+    
+    .hero-title-accent {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 40px rgba(0, 245, 255, 0.6);
+    }
+    
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    /* ===================
+       SEARCH INPUT
+       =================== */
+    .search-container {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      background: var(--smoke);
+      border: 2px solid var(--ash);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 16px; /* Prevents iOS zoom on focus */
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    
+    @media (min-width: 768px) {
+      .search-input {
+        font-size: 1.125rem;
+      }
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .search-input:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    }
+    
+    .btn-search {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--void-purple));
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      letter-spacing: 0.02em;
+      color: var(--void);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    
+    .btn-search:hover {
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+      transform: scale(1.02);
+    }
+    
+    /* ===================
+       UPLOAD FALLBACK
+       =================== */
+    .upload-fallback {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--ash);
+      text-align: center;
+    }
+    
+    .upload-fallback-text {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    
+    .upload-zone {
+      position: relative;
+      border: 2px dashed var(--ash);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(26, 26, 26, 0.5);
+      overflow: hidden;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .upload-zone:hover {
+      border-color: var(--neon-magenta);
+      background: rgba(255, 0, 170, 0.05);
+      box-shadow: 0 0 20px rgba(255, 0, 170, 0.15);
+    }
+    
+    .upload-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      filter: grayscale(50%);
+    }
+    
+    .upload-zone:hover .upload-icon {
+      filter: grayscale(0%);
+    }
+    
+    .upload-text {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      color: var(--text-secondary);
+    }
+    
+    .upload-subtext {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    
+    /* ===================
+       SECTION HEADERS
+       =================== */
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 4rem 0 1.5rem 0;
+    }
+    
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.5rem 0;
+    }
+    
+    /* ===================
+       EXAMPLE CARDS
+       =================== */
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .example-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1.5rem 1rem;
+      background: var(--abyss);
+      border: 2px solid var(--ash);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-body);
+    }
+    
+    .example-card:hover {
+      border-color: var(--neon-magenta);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 0, 170, 0.2);
+    }
+    
+    .example-emoji {
+      font-size: 2rem;
+    }
+    
+    .example-name {
+      font-family: var(--font-display);
+      font-size: 0.875rem;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+    
+    /* ===================
+       ARTIST CARDS
+       =================== */
+    .artists-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .artists-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .artists-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    
+    .artists-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .artist-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--abyss);
+      border: 2px solid var(--ash);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .artist-card:hover {
+      transform: translateY(-2px);
+    }
+    
+    .artist-card.selected {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    }
+    
+    .artist-card.unselected {
+      opacity: 0.5;
+      filter: grayscale(50%);
+    }
+    
+    .artist-image {
+      width: 60px;
+      height: 60px;
+      background: var(--smoke);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    
+    .artist-info {
+      flex: 1;
+    }
+    
+    .artist-name {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      margin: 0 0 0.25rem 0;
+    }
+    
+    .artist-tracks {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    
+    .artist-check {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--ash);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    
+    .artist-card.selected .artist-check {
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      color: var(--void);
+    }
+    
+    /* ===================
+       PROGRESS
+       =================== */
+    .progress-section {
+      max-width: 600px;
+      margin: 3rem auto;
+      text-align: center;
+    }
+    
+    .progress-bar {
+      position: relative;
+      height: 8px;
+      background: var(--ash);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    
+    .progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 75%;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--void-purple));
+      border-radius: 4px;
+      animation: progressPulse 2s ease-in-out infinite;
+    }
+    
+    .progress-stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-box {
+      text-align: center;
+    }
+    
+    .stat-value {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--neon-cyan);
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    
+    /* ===================
+       BUTTONS
+       =================== */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--void-purple));
+      border: none;
+      border-radius: 4px;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      letter-spacing: 0.02em;
+      color: var(--void);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 30px rgba(0, 245, 255, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 40px rgba(0, 245, 255, 0.6);
+    }
+    
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: 2px solid var(--neon-magenta);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--neon-magenta);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 0, 170, 0.1);
+      box-shadow: 0 0 20px rgba(255, 0, 170, 0.3);
+    }
+    
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--smoke);
+      border: 1px solid var(--ash);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-ghost:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+    
+    .btn-spotify {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      background: var(--spotify);
+      border: none;
+      border-radius: 9999px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-spotify:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(29, 185, 84, 0.4);
+    }
+    
+    /* ===================
+       INPUTS
+       =================== */
+    .input-field {
+      padding: 0.75rem 1rem;
+      background: var(--smoke);
+      border: 2px solid var(--ash);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 16px; /* Prevents iOS zoom */
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+      width: 100%;
+      max-width: 300px;
+    }
+    
+    .input-field::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .input-field:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+    }
+    
+    /* ===================
+       COMPONENT LIBRARY
+       =================== */
+    .component-library {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 4rem auto 0;
+      padding: 3rem 2rem;
+      border-top: 1px solid var(--ash);
+    }
+    
+    .library-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+    
+    .component-group {
+      margin-bottom: 2.5rem;
+    }
+    
+    .component-group-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+    
+    .component-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+    }
+    
+    .color-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    
+    .color-swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .color-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+    }
+    
+    .color-name {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+    
+    .color-hex {
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      color: var(--text-muted);
+    }
+    
+    .type-scale {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .type-demo {
+      margin: 0;
+    }
+    
+    /* ===================
+       STICKY BOTTOM CTA (Mobile)
+       =================== */
+    .sticky-cta {
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .sticky-cta {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0));
+        background: linear-gradient(to top, var(--void) 80%, transparent);
+        z-index: 50;
+      }
+      
+      .sticky-cta .btn-primary {
+        width: 100%;
+      }
+      
+      /* Add padding to bottom of page to account for sticky CTA */
+      main {
+        padding-bottom: 100px;
+      }
+    }
+    
+    /* ===================
+       ANIMATIONS
+       =================== */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes progressPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    /* ===================
+       RESPONSIVE
+       =================== */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      .hero-title {
+        font-size: 2.5rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1rem;
+        padding: 0 1rem;
+      }
+      
+      /* Stack search on mobile */
+      .search-container {
+        flex-direction: column;
+        padding: 0 1rem;
+      }
+      
+      .search-input {
+        font-size: 1rem;
+        padding: 1rem;
+      }
+      
+      .btn-search {
+        padding: 1rem;
+        width: 100%;
+      }
+      
+      /* 2-column grid for examples */
+      .examples-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 1rem;
+      }
+      
+      .example-card {
+        padding: 1.25rem 0.75rem;
+      }
+      
+      /* Full-width artist cards */
+      .artists-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .artists-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      /* Stack progress stats */
+      .progress-stats {
+        gap: 1.5rem;
+      }
+      
+      .stat-value {
+        font-size: 1.5rem;
+      }
+      
+      /* Larger touch targets */
+      .btn-primary,
+      .btn-secondary,
+      .btn-spotify {
+        min-height: 48px;
+        padding: 0.875rem 1.5rem;
+      }
+      
+      .artist-card {
+        min-height: 72px;
+      }
+      
+      .artist-check {
+        width: 32px;
+        height: 32px;
+      }
+      
+      /* Upload fallback adjustments */
+      .upload-fallback {
+        padding: 0 1rem;
+      }
+      
+      .upload-zone {
+        max-width: 100%;
+      }
+      
+      /* Component library mobile */
+      .component-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .component-row button {
+        width: 100%;
+      }
+      
+      .color-row {
+        justify-content: center;
+      }
+      
+      main {
+        padding: 2rem 1rem;
+      }
+    }
+    
+    /* Small phones */
+    @media (max-width: 380px) {
+      .hero-title {
+        font-size: 2rem;
+      }
+      
+      .examples-grid {
+        gap: 0.75rem;
+      }
+      
+      .example-emoji {
+        font-size: 1.5rem;
+      }
+      
+      .example-name {
+        font-size: 0.75rem;
+      }
+    }
+    
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+      /* Remove hover effects that don't work well on touch */
+      .example-card:hover {
+        transform: none;
+      }
+      
+      .artist-card:hover {
+        transform: none;
+      }
+      
+      /* Add active states instead */
+      .example-card:active {
+        transform: scale(0.98);
+        border-color: var(--neon-magenta);
+      }
+      
+      .artist-card:active {
+        transform: scale(0.98);
+      }
+      
+      .btn-primary:active,
+      .btn-search:active {
+        transform: scale(0.98);
+      }
+      
+      /* Ensure tap highlights are visible */
+      button, .artist-card, .upload-zone, .example-card {
+        -webkit-tap-highlight-color: rgba(0, 245, 255, 0.2);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise-overlay"></div>
+  <div class="gradient-mesh"></div>
+  
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">CONFLICTED LINEUP</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active">SEARCH</button>
+      <button class="nav-btn">ARTISTS</button>
+      <button class="nav-btn">GENERATE</button>
+    </nav>
+  </header>
+  
+  <main>
+    <!-- Hero Section -->
+    <section>
+      <h1 class="hero-title">
+        FIND YOUR<br>
+        <span class="hero-title-accent">LINEUP</span>
+      </h1>
+      <p class="hero-subtitle">
+        Search any festival. Get a playlist. Enter the portal.
+      </p>
+      
+      <!-- Search Input (Primary Action) -->
+      <div class="search-container">
+        <input type="text" class="search-input" placeholder="Enter festival name...">
+        <button class="btn-search">SEARCH</button>
+      </div>
+      
+      <!-- Example Festivals -->
+      <h3 class="section-title">OR PICK A FESTIVAL</h3>
+      <div class="examples-grid">
+        <button class="example-card">
+          <span class="example-emoji">🦖</span>
+          <span class="example-name">LOST LANDS</span>
+        </button>
+        <button class="example-card">
+          <span class="example-emoji">🏔️</span>
+          <span class="example-name">BASS CANYON</span>
+        </button>
+        <button class="example-card">
+          <span class="example-emoji">🐰</span>
+          <span class="example-name">BEYOND</span>
+        </button>
+        <button class="example-card">
+          <span class="example-emoji">⚡</span>
+          <span class="example-name">THUNDERDOME</span>
+        </button>
+      </div>
+      
+      <!-- Upload Fallback -->
+      <div class="upload-fallback">
+        <p class="upload-fallback-text">Can't find your lineup? Upload a poster instead.</p>
+        <div class="upload-zone">
+          <div class="upload-icon">📸</div>
+          <p class="upload-text">DROP POSTER HERE</p>
+          <p class="upload-subtext">PNG, JPG, WEBP</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Artists Section Preview -->
+    <h3 class="section-title" style="margin-top: 5rem;">— ARTISTS VIEW —</h3>
+    <section style="margin-top: 2rem;">
+      <div class="artists-header">
+        <h2 class="page-title">THE LINEUP</h2>
+        <div class="artists-actions">
+          <button class="btn-ghost">SELECT ALL</button>
+          <button class="btn-ghost">DESELECT ALL</button>
+        </div>
+      </div>
+      <p class="artists-subtitle">4 of 6 artists selected</p>
+      
+      <div class="artists-grid">
+        <div class="artist-card selected">
+          <div class="artist-image">🦖</div>
+          <div class="artist-info">
+            <h4 class="artist-name">EXCISION</h4>
+            <p class="artist-tracks">47 tracks available</p>
+          </div>
+          <div class="artist-check">✓</div>
+        </div>
+        <div class="artist-card selected">
+          <div class="artist-image">🔊</div>
+          <div class="artist-info">
+            <h4 class="artist-name">SUBTRONICS</h4>
+            <p class="artist-tracks">38 tracks available</p>
+          </div>
+          <div class="artist-check">✓</div>
+        </div>
+        <div class="artist-card unselected">
+          <div class="artist-image">🐺</div>
+          <div class="artist-info">
+            <h4 class="artist-name">WOOLI</h4>
+            <p class="artist-tracks">34 tracks available</p>
+          </div>
+          <div class="artist-check"></div>
+        </div>
+        <div class="artist-card selected">
+          <div class="artist-image">💀</div>
+          <div class="artist-info">
+            <h4 class="artist-name">SVDDEN DEATH</h4>
+            <p class="artist-tracks">29 tracks available</p>
+          </div>
+          <div class="artist-check">✓</div>
+        </div>
+      </div>
+      
+      <div style="text-align: center;">
+        <button class="btn-primary">GENERATE PLAYLIST →</button>
+      </div>
+    </section>
+    
+    <!-- Sticky CTA (visible on mobile only) -->
+    <div class="sticky-cta">
+      <button class="btn-primary">GENERATE PLAYLIST →</button>
+    </div>
+    
+    <!-- Progress Section Preview -->
+    <h3 class="section-title" style="margin-top: 5rem;">— GENERATING VIEW —</h3>
+    <section class="progress-section">
+      <h2 class="page-title" style="text-align: center;">BUILDING YOUR SET</h2>
+      
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      
+      <div class="progress-stats">
+        <div class="stat-box">
+          <span class="stat-value">147</span>
+          <span class="stat-label">TRACKS</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value">42</span>
+          <span class="stat-label">ARTISTS</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-value">9h 23m</span>
+          <span class="stat-label">DURATION</span>
+        </div>
+      </div>
+      
+      <div style="margin-top: 2rem;">
+        <button class="btn-spotify">
+          <span style="font-size: 1.25rem;">●</span>
+          OPEN IN SPOTIFY
+        </button>
+      </div>
+      <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 1rem;">
+        <button class="btn-secondary">COPY LINK</button>
+        <button class="btn-secondary">SHARE</button>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Component Library -->
+  <section class="component-library">
+    <h2 class="library-title">COMPONENT REFERENCE</h2>
+    
+    <!-- Buttons -->
+    <div class="component-group">
+      <h3 class="component-group-title">BUTTONS</h3>
+      <div class="component-row">
+        <button class="btn-primary">PRIMARY ACTION</button>
+        <button class="btn-secondary">SECONDARY</button>
+        <button class="btn-ghost">GHOST</button>
+        <button class="btn-spotify"><span>●</span> SPOTIFY</button>
+      </div>
+    </div>
+    
+    <!-- Colors -->
+    <div class="component-group">
+      <h3 class="component-group-title">NEON PALETTE</h3>
+      <div class="color-row">
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #00f5ff; box-shadow: 0 0 20px #00f5ff80;"></div>
+          <span class="color-name">CYAN</span>
+          <span class="color-hex">#00f5ff</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #ff00aa; box-shadow: 0 0 20px #ff00aa80;"></div>
+          <span class="color-name">MAGENTA</span>
+          <span class="color-hex">#ff00aa</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #39ff14; box-shadow: 0 0 20px #39ff1480;"></div>
+          <span class="color-name">GREEN</span>
+          <span class="color-hex">#39ff14</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #ff6a00; box-shadow: 0 0 20px #ff6a0080;"></div>
+          <span class="color-name">ORANGE</span>
+          <span class="color-hex">#ff6a00</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #8b00ff; box-shadow: 0 0 20px #8b00ff80;"></div>
+          <span class="color-name">PURPLE</span>
+          <span class="color-hex">#8b00ff</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Typography -->
+    <div class="component-group">
+      <h3 class="component-group-title">TYPOGRAPHY</h3>
+      <div class="type-scale">
+        <p class="type-demo" style="font-family: 'Bebas Neue', sans-serif; font-size: 3rem;">BEBAS NEUE — DISPLAY</p>
+        <p class="type-demo" style="font-family: 'Permanent Marker', cursive; font-size: 1.5rem;">Permanent Marker — Accent</p>
+        <p class="type-demo" style="font-family: 'Space Grotesk', sans-serif; font-size: 1rem;">Space Grotesk — Body text for reading</p>
+        <p class="type-demo" style="font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;">JetBrains Mono — Technical/code</p>
+      </div>
+    </div>
+    
+    <!-- Inputs -->
+    <div class="component-group">
+      <h3 class="component-group-title">INPUTS</h3>
+      <div class="component-row">
+        <input type="text" class="input-field" placeholder="Search artists...">
+      </div>
+    </div>
+    
+    <!-- Void Palette -->
+    <div class="component-group">
+      <h3 class="component-group-title">VOID PALETTE (BACKGROUNDS)</h3>
+      <div class="color-row">
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #0a0a0a; border: 1px solid #2a2a2a;"></div>
+          <span class="color-name">VOID</span>
+          <span class="color-hex">#0a0a0a</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #141414; border: 1px solid #2a2a2a;"></div>
+          <span class="color-name">ABYSS</span>
+          <span class="color-hex">#141414</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #1a1a1a; border: 1px solid #2a2a2a;"></div>
+          <span class="color-name">SMOKE</span>
+          <span class="color-hex">#1a1a1a</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #2a2a2a; border: 1px solid #404040;"></div>
+          <span class="color-name">ASH</span>
+          <span class="color-hex">#2a2a2a</span>
+        </div>
+        <div class="color-swatch">
+          <div class="color-circle" style="background: #404040; border: 1px solid #606060;"></div>
+          <span class="color-name">EMBER</span>
+          <span class="color-hex">#404040</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <footer style="text-align: center; padding: 3rem 2rem; color: var(--text-muted); font-size: 0.875rem; position: relative; z-index: 1;">
+    <p style="font-family: var(--font-accent); font-size: 1rem; margin-bottom: 0.5rem;">
+      "The lineup isn't just a list. It's a sacred text."
+    </p>
+    <p>Conflicted Lineup — Design Reference v1.0</p>
+  </footer>
+</body>
+</html>
