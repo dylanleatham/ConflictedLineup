@@ -65,6 +65,15 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
       // Empty name = delete
       handleDelete(editingIndex);
     } else {
+      // Check for duplicates (excluding the current artist being edited)
+      const isDuplicate = artists.some(
+        (a, i) => i !== editingIndex && a.name.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (isDuplicate) {
+        // Don't save if it would create a duplicate, just cancel
+        cancelEditing();
+        return;
+      }
       const updated = artists.map((artist, i) =>
         i === editingIndex
           ? { ...artist, name: trimmed, confidence: 'high' as const }

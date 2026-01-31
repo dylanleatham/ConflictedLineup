@@ -16,27 +16,32 @@ export function SpotifyLoginButton({ onClick, disabled = false, isLoading = fals
       onClick={onClick}
       disabled={isDisabled}
       style={{
-        backgroundColor: '#1ED760',
-        color: '#000000',
+        backgroundColor: 'var(--color-spotify)',
+        color: '#ffffff',
         border: 'none',
-        borderRadius: '500px',
+        borderRadius: 'var(--radius-full)',
         padding: '14px 32px',
         fontSize: '16px',
-        fontWeight: 700,
+        fontWeight: 600,
+        fontFamily: 'var(--font-body)',
         display: 'inline-flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '12px',
         cursor: isDisabled ? 'not-allowed' : 'pointer',
         opacity: isDisabled ? 0.6 : 1,
-        transition: 'all 0.2s ease',
+        transition: 'var(--transition-fast)',
+        boxShadow: isDisabled ? 'none' : '0 0 20px rgba(29, 185, 84, 0.4)',
+        minHeight: '52px',
       }}
       onMouseEnter={(e) => {
         if (!isDisabled) {
-          e.currentTarget.style.backgroundColor = '#1DB954';
+          e.currentTarget.style.transform = 'scale(1.02)';
+          e.currentTarget.style.boxShadow = '0 0 30px rgba(29, 185, 84, 0.5)';
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = '#1ED760';
+        e.currentTarget.style.transform = 'scale(1)';
+        e.currentTarget.style.boxShadow = '0 0 20px rgba(29, 185, 84, 0.4)';
       }}
     >
       <SpotifyIcon size={24} />

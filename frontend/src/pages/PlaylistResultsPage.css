@@ -1,27 +1,36 @@
+/* ==========================================
+   PLAYLIST RESULTS PAGE — "The Afterparty"
+   ========================================== */
+
 .results-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
 }
 
 .results-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: var(--space-6);
 }
 
 .grid-full-width {
   grid-column: 1 / -1;
 }
 
-/* Desktop layout: artists 2/3, skipped 1/3 */
+/* Desktop layout: artists and skipped side by side */
 @media (min-width: 960px) {
   .results-grid {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .grid-artists {
     grid-column: 1;
+  }
+
+  /* When there's no skipped section, artists takes full width */
+  .grid-artists.grid-artists-full {
+    grid-column: 1 / -1;
   }
 
   .grid-skipped {
@@ -29,58 +38,81 @@
   }
 }
 
-/* Success card - Spotify green theme */
+/* Success card - Spotify green with glow */
 .success-card {
-  background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+  background: linear-gradient(135deg, var(--color-spotify) 0%, #1ed760 100%);
   color: white;
   text-align: center;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 0 40px rgba(29, 185, 84, 0.4);
+  animation: fade-up var(--duration-slow) var(--ease-out-expo) forwards;
 }
 
 .success-content {
-  padding: 32px 24px !important;
+  padding: var(--space-8) var(--space-6) !important;
 }
 
 .success-icon {
   font-size: 64px !important;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
+  animation: scale-in var(--duration-normal) var(--ease-out-back) forwards;
 }
 
 .success-title {
-  font-weight: 700 !important;
-  margin-bottom: 8px !important;
+  font-family: var(--font-display) !important;
+  font-size: var(--text-3xl) !important;
+  letter-spacing: var(--tracking-tight) !important;
+  font-weight: var(--font-bold) !important;
+  margin-bottom: var(--space-2) !important;
 }
 
 .playlist-name {
   opacity: 0.9;
-  margin-bottom: 8px !important;
+  margin-bottom: var(--space-2) !important;
+  font-size: var(--text-lg) !important;
 }
 
 .playlist-stats {
-  opacity: 0.8;
-  margin-bottom: 24px !important;
+  opacity: 0.85;
+  margin-bottom: var(--space-6) !important;
+  font-family: var(--font-mono) !important;
+  font-size: var(--text-sm) !important;
+  letter-spacing: var(--tracking-wide) !important;
 }
 
 .open-spotify-button {
   background-color: white !important;
-  color: #1DB954 !important;
-  font-weight: 600 !important;
-  padding: 12px 32px !important;
-  border-radius: 24px !important;
+  color: var(--color-spotify) !important;
+  font-weight: var(--font-semibold) !important;
+  font-family: var(--font-body) !important;
+  padding: var(--space-4) var(--space-8) !important;
+  border-radius: var(--radius-full) !important;
+  transition: var(--transition-fast) !important;
+  min-height: 52px !important;
 }
 
 .open-spotify-button:hover {
   background-color: #f0f0f0 !important;
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Artists card */
 .artists-card {
-  background-color: #282828;
-  color: white;
+  background-color: var(--abyss) !important;
+  border: 2px solid var(--ash) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text-primary);
+  animation: fade-up var(--duration-slow) var(--ease-out-expo) 0.1s forwards;
+  opacity: 0;
 }
 
 .section-title {
-  color: white;
-  font-weight: 600 !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-display) !important;
+  font-size: var(--text-xl) !important;
+  letter-spacing: var(--tracking-tight) !important;
+  font-weight: var(--font-semibold) !important;
 }
 
 .artist-list {
@@ -89,19 +121,23 @@
 }
 
 .artist-list-item {
-  padding: 8px 0 !important;
+  padding: var(--space-2) 0 !important;
 }
 
 .artist-check-icon {
-  color: #1DB954;
-  margin-right: 12px;
+  color: var(--toxic-green);
+  margin-right: var(--space-3);
   font-size: 20px !important;
 }
 
 /* Skipped card */
 .skipped-card {
-  background-color: #383838;
-  color: white;
+  background-color: var(--smoke) !important;
+  border: 1px solid var(--ash) !important;
+  border-radius: var(--radius-md) !important;
+  color: var(--text-primary);
+  animation: fade-up var(--duration-slow) var(--ease-out-expo) 0.15s forwards;
+  opacity: 0;
 }
 
 .skipped-list {
@@ -110,57 +146,93 @@
 }
 
 .skipped-list-item {
-  padding: 8px 0 !important;
+  padding: var(--space-2) 0 !important;
 }
 
 .skipped-icon {
-  color: #f59e0b;
-  margin-right: 12px;
+  color: var(--blaze-orange);
+  margin-right: var(--space-3);
   font-size: 20px !important;
 }
 
 /* MUI overrides for dark theme */
 .artists-card .MuiListItemText-primary,
 .skipped-card .MuiListItemText-primary {
-  color: white;
+  color: var(--text-primary);
+  font-family: var(--font-body);
 }
 
 .artists-card .MuiListItemText-secondary,
 .skipped-card .MuiListItemText-secondary {
-  color: #b3b3b3;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
 }
 
 .artists-card .MuiDivider-root,
 .skipped-card .MuiDivider-root {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--ash);
+}
+
+.artists-card .MuiCardContent-root,
+.skipped-card .MuiCardContent-root {
+  padding: var(--space-5) !important;
+}
+
+/* Scrollbar styling */
+.artist-list::-webkit-scrollbar,
+.skipped-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.artist-list::-webkit-scrollbar-track,
+.skipped-list::-webkit-scrollbar-track {
+  background: var(--smoke);
+  border-radius: var(--radius-full);
+}
+
+.artist-list::-webkit-scrollbar-thumb,
+.skipped-list::-webkit-scrollbar-thumb {
+  background: var(--ash);
+  border-radius: var(--radius-full);
+}
+
+.artist-list::-webkit-scrollbar-thumb:hover,
+.skipped-list::-webkit-scrollbar-thumb:hover {
+  background: var(--ember);
 }
 
 /* Action section */
 .action-section {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: var(--space-4) 0;
 }
 
 .start-new-button {
-  border-color: #1DB954 !important;
-  color: #1DB954 !important;
-  padding: 12px 32px !important;
-  border-radius: 24px !important;
+  border: 2px solid var(--neon-cyan) !important;
+  color: var(--neon-cyan) !important;
+  font-family: var(--font-body) !important;
+  font-weight: var(--font-medium) !important;
+  padding: var(--space-4) var(--space-8) !important;
+  border-radius: var(--radius-md) !important;
+  transition: var(--transition-fast) !important;
+  min-height: 52px !important;
 }
 
 .start-new-button:hover {
-  background-color: rgba(29, 185, 84, 0.1) !important;
+  background-color: rgba(0, 245, 255, 0.1) !important;
+  box-shadow: var(--glow-subtle-cyan);
 }
 
 /* Mobile responsiveness */
 @media (max-width: 600px) {
   .results-page {
-    padding: 16px 12px;
+    padding: var(--space-4) var(--space-3);
   }
 
   .success-content {
-    padding: 24px 16px !important;
+    padding: var(--space-6) var(--space-4) !important;
   }
 
   .success-icon {
@@ -168,7 +240,7 @@
   }
 
   .success-title {
-    font-size: 1.5rem !important;
+    font-size: var(--text-2xl) !important;
   }
 
   .artist-list {
@@ -177,5 +249,16 @@
 
   .skipped-list {
     max-height: 200px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .open-spotify-button:active {
+    transform: scale(0.98);
+  }
+
+  .start-new-button:active {
+    background-color: rgba(0, 245, 255, 0.15) !important;
   }
 }

@@ -99,8 +99,8 @@ export function PlaylistResultsPage() {
           </Card>
         </Box>
 
-        {/* Artists included - 2/3 width on desktop, full on mobile */}
-        <Box className="grid-artists">
+        {/* Artists included - full width when no skipped, else shares row */}
+        <Box className={`grid-artists ${skipped.length === 0 ? 'grid-artists-full' : ''}`}>
           <Card className="artists-card">
             <CardContent>
               <Typography variant="h6" className="section-title">

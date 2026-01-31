@@ -193,9 +193,10 @@ export function TrackSelectionPage() {
     setError(null);
 
     try {
+      // Don't pass year separately if it's already in the festival name
       const playlist = await createPlaylist(
         festivalName || 'My Festival Playlist',
-        year,
+        festivalNameIncludesYear ? undefined : year,
         result.artists,
         token
       );
@@ -232,6 +233,12 @@ export function TrackSelectionPage() {
       )
     : 0;
 
+  // Check if festival name already contains the year to avoid duplication
+  const festivalNameIncludesYear = festivalName && year && festivalName.includes(String(year));
+  const displayTitle = festivalName
+    ? (festivalNameIncludesYear ? festivalName : `${festivalName}${year ? ` ${year}` : ''}`)
+    : 'Track Selection Complete';
+
   return (
     <div className="track-selection-page">
       {loading && (
@@ -264,7 +271,7 @@ export function TrackSelectionPage() {
       {result && !loading && (
         <div className="results-container">
           <div className="results-summary">
-            <h1>{festivalName ? `${festivalName}${year ? ` ${year}` : ''}` : 'Track Selection Complete'}</h1>
+            <h1>{displayTitle}</h1>
             <p>
               Found <strong>{totalTracks} tracks</strong> from{' '}
               <strong>{result.artists.length} artists</strong>

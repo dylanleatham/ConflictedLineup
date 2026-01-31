@@ -1,149 +1,202 @@
+/* ==========================================
+   EDITABLE ARTIST LIST — Dark Theme
+   ========================================== */
+
 .editable-artist-list {
   width: 100%;
 }
 
 /* Add artist section - prominent at top */
 .add-artist-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-5);
 }
 
 .add-artist-section .MuiTextField-root {
-  background: white;
-  border-radius: 8px;
+  background: var(--smoke);
+  border-radius: var(--radius-md);
 }
 
 .add-artist-section .MuiOutlinedInput-root {
-  background: #f8f9fa;
+  background: var(--smoke);
+  color: var(--text-primary);
+  font-family: var(--font-body);
 }
 
 .add-artist-section .MuiOutlinedInput-root:hover {
-  background: #fff;
+  background: var(--abyss);
 }
 
 .add-artist-section .MuiOutlinedInput-root.Mui-focused {
-  background: #fff;
+  background: var(--abyss);
 }
 
 .add-artist-section .MuiOutlinedInput-notchedOutline {
-  border-color: #ddd;
+  border-color: var(--ash);
+  border-width: 2px;
 }
 
 .add-artist-section .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #1DB954;
+  border-color: var(--neon-cyan);
 }
 
 .add-artist-section .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-  border-color: #1DB954;
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-subtle-cyan);
+}
+
+.add-artist-section .MuiInputLabel-root {
+  color: var(--text-muted);
+}
+
+.add-artist-section .MuiInputLabel-root.Mui-focused {
+  color: var(--neon-cyan);
+}
+
+.add-artist-section .MuiInputBase-input {
+  color: var(--text-primary);
+}
+
+.add-artist-section .MuiInputBase-input::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
 }
 
 .add-hint {
   display: block;
-  margin-top: 4px;
-  color: #888;
-  font-size: 0.75rem;
+  margin-top: var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
 }
 
 /* Artist chips container */
 .artist-chips-container {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
+  background: var(--smoke);
+  border: 1px solid var(--ash);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
 }
 
 .chips-header {
-  color: #666;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-3);
+  font-weight: var(--font-medium);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .edit-hint {
-  font-size: 0.75rem;
-  color: #aaa;
-  font-weight: 400;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
 }
 
 .artist-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   max-height: 300px;
   overflow-y: auto;
 }
 
 /* Chip styling */
 .artist-chips .MuiChip-root {
-  background: white;
-  color: #333;
-  border: 1px solid #ddd;
-  font-size: 0.875rem;
+  background: var(--abyss);
+  color: var(--text-primary);
+  border: 1px solid var(--ash);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
   cursor: pointer;
+  transition: var(--transition-fast);
 }
 
 .artist-chips .MuiChip-root:hover {
-  background: #f0f0f0;
+  background: var(--charcoal);
+  border-color: var(--neon-cyan);
 }
 
 .artist-chips .MuiChip-deleteIcon {
-  color: #999;
+  color: var(--text-muted);
+  transition: var(--transition-fast);
 }
 
 .artist-chips .MuiChip-deleteIcon:hover {
-  color: #d32f2f;
+  color: var(--blood-red);
 }
 
 .artist-chips .uncertain-chip {
-  background: #fff8e1;
-  border-color: #ffb74d;
+  background: rgba(255, 106, 0, 0.15);
+  border-color: var(--blaze-orange);
+  color: var(--blaze-orange);
 }
 
 .artist-chips .uncertain-chip:hover {
-  background: #ffecb3;
+  background: rgba(255, 106, 0, 0.25);
 }
 
 /* Inline edit */
 .chip-edit-container {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: white;
-  border: 2px solid #1DB954;
-  border-radius: 16px;
-  padding: 2px 8px;
+  gap: var(--space-1);
+  background: var(--abyss);
+  border: 2px solid var(--neon-cyan);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-3);
+  box-shadow: var(--glow-subtle-cyan);
 }
 
 .chip-edit-input {
   border: none;
   outline: none;
-  font-size: 0.875rem;
-  padding: 4px 0;
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  padding: var(--space-1) 0;
   width: 120px;
   background: transparent;
+  color: var(--text-primary);
 }
 
 .chip-edit-action {
   font-size: 18px !important;
   cursor: pointer;
   padding: 2px;
-  border-radius: 50%;
-  transition: all 0.15s;
+  border-radius: var(--radius-full);
+  transition: var(--transition-fast);
 }
 
 .chip-edit-action.save {
-  color: #1DB954;
+  color: var(--toxic-green);
 }
 
 .chip-edit-action.save:hover {
-  background: rgba(29, 185, 84, 0.1);
+  background: rgba(57, 255, 20, 0.15);
 }
 
 .chip-edit-action.cancel {
-  color: #999;
+  color: var(--text-muted);
 }
 
 .chip-edit-action.cancel:hover {
-  color: #d32f2f;
-  background: rgba(211, 47, 47, 0.1);
+  color: var(--blood-red);
+  background: rgba(220, 20, 60, 0.15);
+}
+
+/* Scrollbar styling for chips container */
+.artist-chips::-webkit-scrollbar {
+  width: 6px;
+}
+
+.artist-chips::-webkit-scrollbar-track {
+  background: var(--smoke);
+  border-radius: var(--radius-full);
+}
+
+.artist-chips::-webkit-scrollbar-thumb {
+  background: var(--ash);
+  border-radius: var(--radius-full);
+}
+
+.artist-chips::-webkit-scrollbar-thumb:hover {
+  background: var(--ember);
 }
