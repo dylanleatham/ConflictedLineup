@@ -92,23 +92,25 @@ public class SpotifyTrackService : ISpotifyTrackService
 
             var artistId = searchResult.ArtistId;
 
-            // Simplified: Only fetch top 5 tracks per artist (minimize API calls)
-            // TODO: Re-enable familiar tracks and recent releases once rate limiting is resolved
             var topTracks = await _topTracksService.GetTopTracksAsync(spotify, artistId);
+            var recentTracks = await _recentReleasesService.GetRecentTracksAsync(spotify, artistId);
+
+            var (_, dedupedTop, dedupedRecent) = DeduplicateTracks(
+                new List<TrackInfo>(), topTracks, recentTracks);
 
             var result = new ArtistTrackResult(
                 ArtistName: searchResult.ArtistName,
                 SpotifyArtistId: artistId,
-                FamiliarTracks: new List<TrackInfo>(),  // Disabled for now
-                TopTracks: topTracks,
-                RecentTracks: new List<TrackInfo>()     // Disabled for now
+                FamiliarTracks: new List<TrackInfo>(),
+                TopTracks: dedupedTop,
+                RecentTracks: dedupedRecent
             );
 
             artists.Add(result);
 
             _logger.LogInformation(
-                "Selected {Count} top tracks for {ArtistName}",
-                topTracks.Count, searchResult.ArtistName);
+                "Selected {TopCount} top tracks and {RecentCount} recent tracks for {ArtistName}",
+                dedupedTop.Count, dedupedRecent.Count, searchResult.ArtistName);
 
             // Report progress
             progress?.Report(new ArtistProgressUpdate(
