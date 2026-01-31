@@ -50,11 +50,16 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
+      - name: Verify SDK version
+        run: dotnet --info
+
       - name: Clean and Publish
         working-directory: ./backend/src/ConflictedLineup.Api
         run: |
           dotnet clean --configuration Release
-          dotnet publish --configuration Release --output ./publish
+          dotnet nuget locals all --clear
+          dotnet publish --configuration Release --framework net9.0 --output ./publish
+          cat ./publish/ConflictedLineup.Api.deps.json | head -20
 
       - name: Login to Azure
         uses: azure/login@v2
