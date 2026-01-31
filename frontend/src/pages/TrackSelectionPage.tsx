@@ -3,14 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, CircularProgress, Collapse, IconButton } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import StarIcon from '@mui/icons-material/Star';
-import NewReleasesIcon from '@mui/icons-material/NewReleases';
 import { useAuth } from '../auth';
 import { selectTracksForArtists } from '../services/trackSelectionApi';
 import { createPlaylist } from '../services/playlistApi';
 import { PlaylistResultsState } from '../types/playlist';
-import { TrackSelectionResponse, ArtistTrackResult, TrackInfo, SkippedArtist } from '../types/trackSelection';
+import { TrackSelectionResponse, ArtistTrackResult, SkippedArtist } from '../types/trackSelection';
 import { ArtistInfo } from '../types/extraction';
 import './TrackSelectionPage.css';
 
@@ -20,49 +17,17 @@ function formatDuration(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
-interface TrackListProps {
-  tracks: TrackInfo[];
-  category: 'familiar' | 'top' | 'recent';
-}
-
-function TrackList({ tracks, category }: TrackListProps) {
-  if (tracks.length === 0) {
-    return null;
-  }
-
-  const categoryConfig = {
-    familiar: { icon: <MusicNoteIcon />, label: 'Familiar', color: '#1DB954' },
-    top: { icon: <StarIcon />, label: 'Top', color: '#3b82f6' },
-    recent: { icon: <NewReleasesIcon />, label: 'Recent', color: '#a855f7' },
-  };
-
-  const config = categoryConfig[category];
-
-  return (
-    <div className="track-category">
-      <div className="category-header" style={{ color: config.color }}>
-        {config.icon}
-        <span>{config.label}</span>
-        <span className="track-count">({tracks.length})</span>
-      </div>
-      <ul className="track-list">
-        {tracks.map((track) => (
-          <li key={track.spotifyTrackId} className="track-item">
-            <span className="track-name">{track.name}</span>
-            <span className="track-duration">{formatDuration(track.durationMs)}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 interface ArtistResultCardProps {
   result: ArtistTrackResult;
 }
 
 function ArtistResultCard({ result }: ArtistResultCardProps) {
-  const totalTracks = result.familiarTracks.length + result.topTracks.length + result.recentTracks.length;
+  const allTracks = [
+    ...result.familiarTracks,
+    ...result.topTracks,
+    ...result.recentTracks,
+  ];
 
   return (
     <div className="artist-result-card">
@@ -75,13 +40,16 @@ function ArtistResultCard({ result }: ArtistResultCardProps) {
         >
           {result.artistName}
         </a>
-        <span className="artist-track-total">{totalTracks} tracks</span>
+        <span className="artist-track-total">{allTracks.length} tracks</span>
       </div>
-      <div className="track-categories">
-        <TrackList tracks={result.familiarTracks} category="familiar" />
-        <TrackList tracks={result.topTracks} category="top" />
-        <TrackList tracks={result.recentTracks} category="recent" />
-      </div>
+      <ul className="track-list">
+        {allTracks.map((track) => (
+          <li key={track.spotifyTrackId} className="track-item">
+            <span className="track-name">{track.name}</span>
+            <span className="track-duration">{formatDuration(track.durationMs)}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -247,7 +215,7 @@ export function TrackSelectionPage() {
           <h2>Selecting Tracks</h2>
           <p>Processing {artistNames.length} artists...</p>
           <p className="loading-hint">
-            Finding familiar, top, and recent tracks for each artist
+            Finding the best tracks for each artist
           </p>
         </div>
       )}

@@ -6,11 +6,11 @@ namespace ConflictedLineup.Api.Services;
 public interface ISpotifyTopTracksService
 {
     /// <summary>
-    /// Get top tracks for an artist (up to 5)
+    /// Get top tracks for an artist (up to 10)
     /// </summary>
     /// <param name="spotify">Authenticated Spotify client</param>
     /// <param name="artistId">Spotify artist ID</param>
-    /// <returns>List of up to 3 most popular tracks</returns>
+    /// <returns>List of up to 10 most popular tracks</returns>
     Task<List<TrackInfo>> GetTopTracksAsync(ISpotifyClient spotify, string artistId);
 }
 
@@ -19,7 +19,7 @@ public class SpotifyTopTracksService : ISpotifyTopTracksService
     private readonly ILogger<SpotifyTopTracksService> _logger;
     private const int MaxRetries = 3;
     private const string Market = "US";
-    private const int MaxTracks = 5;
+    private const int MaxTracks = 10;
 
     public SpotifyTopTracksService(ILogger<SpotifyTopTracksService> logger)
     {
@@ -39,7 +39,7 @@ public class SpotifyTopTracksService : ISpotifyTopTracksService
                 return new List<TrackInfo>();
             }
 
-            // Take first 5 tracks (already sorted by popularity)
+            // Take first 10 tracks (already sorted by popularity)
             var topTracks = response.Tracks
                 .Take(MaxTracks)
                 .Select(MapToTrackInfo)

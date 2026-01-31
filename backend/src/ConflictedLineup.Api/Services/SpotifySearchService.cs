@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using SpotifyAPI.Web;
 
 namespace ConflictedLineup.Api.Services;
@@ -18,7 +19,7 @@ public interface ISpotifySearchService
     Task<ArtistSearchResult?> SearchArtistAsync(ISpotifyClient spotify, string artistName);
 }
 
-public class SpotifySearchService : ISpotifySearchService
+public partial class SpotifySearchService : ISpotifySearchService
 {
     private readonly ILogger<SpotifySearchService> _logger;
     private const int MaxRetries = 3;
@@ -36,28 +37,97 @@ public class SpotifySearchService : ISpotifySearchService
             var searchRequest = new SearchRequest(SearchRequest.Types.Artist, artistName)
             {
                 Market = Market,
-                Limit = 5 // Get multiple results - Limit=1 caused issues with rate limiting
+                Limit = 5 // Get multiple results to find best match
             };
 
             var searchResponse = await spotify.Search.Item(searchRequest);
 
             if (searchResponse.Artists.Items?.Count > 0)
             {
-                var artist = searchResponse.Artists.Items[0];
-                _logger.LogDebug("Found artist '{SpotifyName}' (ID: {Id}) for search '{SearchName}'",
-                    artist.Name, artist.Id, artistName);
+                // Try to find a matching artist from the results
+                foreach (var artist in searchResponse.Artists.Items)
+                {
+                    if (IsArtistNameMatch(artistName, artist.Name))
+                    {
+                        _logger.LogDebug("Found matching artist '{SpotifyName}' (ID: {Id}) for search '{SearchName}'",
+                            artist.Name, artist.Id, artistName);
 
-                return new ArtistSearchResult(
-                    ArtistId: artist.Id,
-                    ArtistName: artist.Name,
-                    Followers: artist.Followers?.Total ?? 0
-                );
+                        return new ArtistSearchResult(
+                            ArtistId: artist.Id,
+                            ArtistName: artist.Name,
+                            Followers: artist.Followers?.Total ?? 0
+                        );
+                    }
+                }
+
+                // No match found - log the mismatch
+                var firstResult = searchResponse.Artists.Items[0];
+                _logger.LogWarning(
+                    "Artist name mismatch: searched for '{SearchName}' but Spotify returned '{SpotifyName}' - skipping",
+                    artistName, firstResult.Name);
+                return null;
             }
 
             _logger.LogDebug("No artist found for search '{ArtistName}'", artistName);
             return null;
         });
     }
+
+    /// <summary>
+    /// Check if the Spotify artist name matches the search term.
+    /// Normalizes both names for comparison (lowercase, remove punctuation, handle "The" prefix).
+    /// </summary>
+    private bool IsArtistNameMatch(string searchName, string spotifyName)
+    {
+        var normalizedSearch = NormalizeArtistName(searchName);
+        var normalizedSpotify = NormalizeArtistName(spotifyName);
+
+        // Exact match after normalization
+        if (normalizedSearch == normalizedSpotify)
+            return true;
+
+        // Check if one contains the other (handles "DJ Snake" matching "Snake" etc.)
+        // But require at least 80% overlap to avoid false positives
+        if (normalizedSearch.Length > 0 && normalizedSpotify.Length > 0)
+        {
+            var shorter = normalizedSearch.Length <= normalizedSpotify.Length ? normalizedSearch : normalizedSpotify;
+            var longer = normalizedSearch.Length > normalizedSpotify.Length ? normalizedSearch : normalizedSpotify;
+
+            // If the shorter name is contained in the longer one and is at least 80% of its length
+            if (longer.Contains(shorter) && (double)shorter.Length / longer.Length >= 0.8)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Normalize artist name for comparison:
+    /// - Lowercase
+    /// - Remove "the " prefix
+    /// - Remove punctuation and extra whitespace
+    /// </summary>
+    private string NormalizeArtistName(string name)
+    {
+        // Lowercase
+        var normalized = name.ToLowerInvariant();
+
+        // Remove "the " prefix
+        if (normalized.StartsWith("the "))
+            normalized = normalized[4..];
+
+        // Remove punctuation and normalize whitespace
+        normalized = NonAlphanumericRegex().Replace(normalized, " ");
+        normalized = WhitespaceRegex().Replace(normalized, " ").Trim();
+
+        return normalized;
+    }
+
+    [GeneratedRegex(@"[^\w\s]")]
+    private static partial Regex NonAlphanumericRegex();
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 
     private async Task<T?> ExecuteWithRetryAsync<T>(Func<Task<T?>> apiCall)
     {

@@ -12,6 +12,15 @@ public interface ISpotifyRecentReleasesService
     /// <param name="artistId">Spotify artist ID</param>
     /// <returns>List of up to 3 tracks from the most recent album/EP/single</returns>
     Task<List<TrackInfo>> GetRecentTracksAsync(ISpotifyClient spotify, string artistId);
+
+    /// <summary>
+    /// Get recent album/single IDs for an artist (for batch fetching)
+    /// </summary>
+    /// <param name="spotify">Authenticated Spotify client</param>
+    /// <param name="artistId">Spotify artist ID</param>
+    /// <param name="limit">Maximum number of albums to return</param>
+    /// <returns>List of album IDs</returns>
+    Task<List<string>> GetRecentAlbumIdsAsync(ISpotifyClient spotify, string artistId, int limit = 2);
 }
 
 public class SpotifyRecentReleasesService : ISpotifyRecentReleasesService
@@ -52,6 +61,22 @@ public class SpotifyRecentReleasesService : ISpotifyRecentReleasesService
         }
 
         return collectedTracks;
+    }
+
+    public async Task<List<string>> GetRecentAlbumIdsAsync(ISpotifyClient spotify, string artistId, int limit = 2)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            var singlesRequest = new ArtistsAlbumsRequest
+            {
+                IncludeGroupsParam = ArtistsAlbumsRequest.IncludeGroups.Single,
+                Market = Market,
+                Limit = limit
+            };
+
+            var singlesResponse = await spotify.Artists.GetAlbums(artistId, singlesRequest);
+            return singlesResponse.Items?.Select(a => a.Id).ToList() ?? new List<string>();
+        }) ?? new List<string>();
     }
 
     private async Task<List<SimpleAlbum>> GetRecentSinglesAsync(ISpotifyClient spotify, string artistId)

@@ -16,6 +16,7 @@ export interface TrackInfo {
 export interface ArtistTrackResult {
   artistName: string;
   spotifyArtistId: string;
+  popularity: number;
   familiarTracks: TrackInfo[];
   topTracks: TrackInfo[];
   recentTracks: TrackInfo[];
