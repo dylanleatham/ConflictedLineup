@@ -55,6 +55,7 @@ jobs:
         working-directory: ./frontend
         env:
           VITE_API_URL: https://conflictedlineup-api.azurewebsites.net
+          VITE_SPOTIFY_CLIENT_ID: ${{ secrets.VITE_SPOTIFY_CLIENT_ID }}
 
       - name: Prepare deployment package
         run: |
