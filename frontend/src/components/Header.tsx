@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { UserProfile } from './UserProfile';
 import { ProfileDropdown } from './ProfileDropdown';
 
 export function Header() {
+  const navigate = useNavigate();
   const { isAuthenticated, profile, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -19,7 +21,7 @@ export function Header() {
   return (
     <header className="app-header">
       <div className="header-content">
-        <h1 className="header-logo">Conflicted Lineup</h1>
+        <h1 className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>Conflicted Lineup</h1>
         <div className="header-right">
           <div className="profile-container">
             <UserProfile
