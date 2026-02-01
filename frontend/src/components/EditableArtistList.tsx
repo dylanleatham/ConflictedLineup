@@ -156,7 +156,7 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
                     {artist.name}
                     {artist.confidence === 'uncertain' && (
                       <HelpOutlineIcon
-                        sx={{ fontSize: 14, color: '#ff9800' }}
+                        sx={{ fontSize: 18, color: '#ff9800' }}
                         titleAccess="Uncertain extraction - verify spelling"
                       />
                     )}
@@ -165,7 +165,6 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
                 onClick={() => startEditing(index)}
                 onDelete={disabled ? undefined : () => handleDelete(index)}
                 className={artist.confidence === 'uncertain' ? 'uncertain-chip' : ''}
-                size="small"
               />
             )
           ))}

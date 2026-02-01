@@ -94,9 +94,11 @@
 .artist-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  max-height: 300px;
+  gap: var(--space-3);
+  max-height: 400px;
   overflow-y: auto;
+  overscroll-behavior: contain; /* Prevent scroll chaining to parent on mobile */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Chip styling */
@@ -104,10 +106,16 @@
   background: var(--abyss);
   color: var(--text-primary);
   border: 1px solid var(--ash);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-family: var(--font-body);
   cursor: pointer;
   transition: var(--transition-fast);
+  height: auto;
+  padding: var(--space-2) var(--space-1);
+}
+
+.artist-chips .MuiChip-label {
+  padding: 0 var(--space-2);
 }
 
 .artist-chips .MuiChip-root:hover {
@@ -118,6 +126,8 @@
 .artist-chips .MuiChip-deleteIcon {
   color: var(--text-muted);
   transition: var(--transition-fast);
+  font-size: 1.25rem;
+  margin-right: var(--space-1);
 }
 
 .artist-chips .MuiChip-deleteIcon:hover {
@@ -138,29 +148,29 @@
 .chip-edit-container {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   background: var(--abyss);
   border: 2px solid var(--neon-cyan);
   border-radius: var(--radius-full);
-  padding: 2px var(--space-3);
+  padding: var(--space-2) var(--space-3);
   box-shadow: var(--glow-subtle-cyan);
 }
 
 .chip-edit-input {
   border: none;
   outline: none;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-family: var(--font-body);
   padding: var(--space-1) 0;
-  width: 120px;
+  width: 140px;
   background: transparent;
   color: var(--text-primary);
 }
 
 .chip-edit-action {
-  font-size: 18px !important;
+  font-size: 22px !important;
   cursor: pointer;
-  padding: 2px;
+  padding: var(--space-1);
   border-radius: var(--radius-full);
   transition: var(--transition-fast);
 }
@@ -199,4 +209,16 @@
 
 .artist-chips::-webkit-scrollbar-thumb:hover {
   background: var(--ember);
+}
+
+/* Mobile scroll fixes */
+@media (hover: none) and (pointer: coarse) {
+  .artist-chips-container {
+    touch-action: pan-y; /* Only allow vertical panning, prevent zoom/pinch interference */
+  }
+
+  .artist-chips {
+    /* Ensure smooth scroll on touch devices */
+    scroll-behavior: smooth;
+  }
 }
