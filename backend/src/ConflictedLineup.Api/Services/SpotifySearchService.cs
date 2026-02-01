@@ -34,7 +34,18 @@ public partial class SpotifySearchService : ISpotifySearchService
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var searchRequest = new SearchRequest(SearchRequest.Types.Artist, artistName)
+            // Sanitize the search query to avoid punctuation confusing Spotify's search
+            // (e.g., "Hol!" returning "Wooli" as top result)
+            // We still compare results against the original unsanitized name below
+            var sanitizedQuery = SanitizeSearchQuery(artistName);
+
+            if (sanitizedQuery != artistName)
+            {
+                _logger.LogDebug("Sanitized search query from '{Original}' to '{Sanitized}'",
+                    artistName, sanitizedQuery);
+            }
+
+            var searchRequest = new SearchRequest(SearchRequest.Types.Artist, sanitizedQuery)
             {
                 Market = Market,
                 Limit = 5 // Get multiple results to find best match
@@ -99,6 +110,19 @@ public partial class SpotifySearchService : ISpotifySearchService
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Sanitize the search query for Spotify API.
+    /// Removes punctuation that can confuse Spotify's search algorithm
+    /// while preserving the core artist name for matching.
+    /// </summary>
+    private string SanitizeSearchQuery(string query)
+    {
+        // Remove punctuation but keep alphanumeric characters and spaces
+        var sanitized = NonAlphanumericRegex().Replace(query, " ");
+        sanitized = WhitespaceRegex().Replace(sanitized, " ").Trim();
+        return sanitized;
     }
 
     /// <summary>
