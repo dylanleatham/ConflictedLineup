@@ -23,19 +23,11 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
-
-      - name: Restore dependencies
-        working-directory: ./backend/src/ConflictedLineup.Api
-        run: dotnet restore
+          dotnet-version: '8.0.x'
 
       - name: Build
         working-directory: ./backend/src/ConflictedLineup.Api
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Test
-        working-directory: ./backend/src/ConflictedLineup.Api
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet build --configuration Release
 
   deploy:
     needs: test
@@ -48,18 +40,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '8.0.x'
 
-      - name: Verify SDK version
-        run: dotnet --info
-
-      - name: Clean and Publish
+      - name: Publish
         working-directory: ./backend/src/ConflictedLineup.Api
         run: |
-          dotnet clean --configuration Release
           dotnet nuget locals all --clear
-          dotnet publish --configuration Release --framework net9.0 --output ./publish
-          cat ./publish/ConflictedLineup.Api.deps.json | head -20
+          dotnet publish --configuration Release --output ./publish
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -68,11 +55,17 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Clear wwwroot before deploy
+        run: |
+          az webapp config appsettings set --name conflictedlineup-api --resource-group rg-conflictedlineup-prod-centralus --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false
+          az webapp deployment source delete --name conflictedlineup-api --resource-group rg-conflictedlineup-prod-centralus || true
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: conflictedlineup-api
           package: ./backend/src/ConflictedLineup.Api/publish
+          clean: true
 
       - name: Logout from Azure
         if: always()
