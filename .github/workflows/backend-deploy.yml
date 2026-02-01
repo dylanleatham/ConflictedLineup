@@ -44,9 +44,7 @@ jobs:
 
       - name: Publish
         working-directory: ./backend/src/ConflictedLineup.Api
-        run: |
-          dotnet nuget locals all --clear
-          dotnet publish --configuration Release --output ./publish
+        run: dotnet publish --configuration Release --output ./publish
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -54,11 +52,6 @@ jobs:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Clear wwwroot before deploy
-        run: |
-          az webapp config appsettings set --name conflictedlineup-api --resource-group rg-conflictedlineup-prod-centralus --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false
-          az webapp deployment source delete --name conflictedlineup-api --resource-group rg-conflictedlineup-prod-centralus || true
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
