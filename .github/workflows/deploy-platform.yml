@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     uses: dylanleatham/knucklehead-platform/.github/workflows/build-and-push-image.yml@main
