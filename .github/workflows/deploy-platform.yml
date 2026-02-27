@@ -1,0 +1,23 @@
+name: Deploy to Platform
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: dylanleatham/knucklehead-platform/.github/workflows/build-and-push-image.yml@main
+    with:
+      app-name: conflicted
+      dockerfile-path: ./Dockerfile
+    secrets: inherit
+
+  deploy:
+    needs: build
+    uses: dylanleatham/knucklehead-platform/.github/workflows/deploy-container-app.yml@main
+    with:
+      app-name: conflicted
+      resource-group: conflicted-rg
+      image-tag: ${{ needs.build.outputs.image-tag }}
+    secrets: inherit

@@ -17,7 +17,8 @@ builder.Services.AddCors(options =>
                   "http://127.0.0.1:5173",
                   "http://127.0.0.1:5175",
                   "https://conflictedlineup.com",
-                  "https://www.conflictedlineup.com"
+                  "https://www.conflictedlineup.com",
+                  "https://knucklehead.dev"
               )
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -40,10 +41,8 @@ builder.Services.AddScoped<ISpotifyPlaylistService, SpotifyPlaylistService>();
 
 var app = builder.Build();
 
-app.UseCors();
-
-// Health check endpoint (supports GET and HEAD for Front Door probes)
-app.MapMethods("/api/health", new[] { "GET", "HEAD" }, () =>
+// Health check at root (not under /conflicted) for platform probes
+app.MapMethods("/healthz", new[] { "GET", "HEAD" }, () =>
 {
     return Results.Ok(new
     {
@@ -52,7 +51,16 @@ app.MapMethods("/api/health", new[] { "GET", "HEAD" }, () =>
     });
 });
 
+app.UsePathBase("/conflicted");
+
+app.UseCors();
+
+app.UseStaticFiles();
+
 // Map controllers
 app.MapControllers();
+
+// SPA fallback for client-side routes
+app.MapFallbackToFile("index.html");
 
 app.Run();
