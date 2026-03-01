@@ -7,6 +7,8 @@ import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider'
 
 const basePath = import.meta.env.BASE_URL;
+// BrowserRouter basename must not have a trailing slash, but Vite's BASE_URL always includes one
+const routerBasename = basePath.replace(/\/+$/, '') || '/';
 
 // Clear stale tokens if session expired to prevent refresh loop
 if (window.location.search.includes('session_expired=true')) {
@@ -19,7 +21,7 @@ if (window.location.search.includes('session_expired=true')) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter basename={basePath}>
+    <BrowserRouter basename={routerBasename}>
       <AuthProvider>
         <App />
       </AuthProvider>
