@@ -5,7 +5,9 @@ import {
   FestivalSearchRequest,
 } from '../types/extraction';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { apiBaseUrl } from '../config';
+
+const API_BASE_URL = apiBaseUrl;
 
 /**
  * Extract artists from a festival poster image using Claude Vision API.

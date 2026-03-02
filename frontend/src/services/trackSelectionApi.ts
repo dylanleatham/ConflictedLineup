@@ -1,6 +1,8 @@
 import { TrackSelectionResponse } from '../types/trackSelection';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import { apiBaseUrl } from '../config';
+
+const API_BASE_URL = apiBaseUrl;
 
 /**
  * Select tracks for artists using Spotify user's listening history.

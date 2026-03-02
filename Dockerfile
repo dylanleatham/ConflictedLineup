@@ -4,8 +4,6 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
-ENV VITE_API_URL=/conflicted
-ENV VITE_BASE_PATH=/conflicted/
 ENV VITE_SPOTIFY_CLIENT_ID=c24c01e307fc439e9148244da86142be
 RUN npm run build
 

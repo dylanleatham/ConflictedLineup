@@ -1,6 +1,5 @@
 import { TAuthConfig } from 'react-oauth2-code-pkce';
-
-const basePath = import.meta.env.BASE_URL;
+import { basePath } from '../config';
 
 export const spotifyAuthConfig: TAuthConfig = {
   clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID || '',
