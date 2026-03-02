@@ -41,7 +41,13 @@ builder.Services.AddScoped<ISpotifyPlaylistService, SpotifyPlaylistService>();
 
 var app = builder.Build();
 
-// Health check at root (not under /conflicted) for platform probes
+app.UsePathBase("/conflicted");
+app.UseRouting();
+app.UseCors();
+app.UseStaticFiles();
+
+// Health check at root for platform probes (probes hit /healthz directly;
+// UsePathBase is a no-op when the path doesn't start with /conflicted)
 app.MapMethods("/healthz", new[] { "GET", "HEAD" }, () =>
 {
     return Results.Ok(new
@@ -50,12 +56,6 @@ app.MapMethods("/healthz", new[] { "GET", "HEAD" }, () =>
         timestamp = DateTime.UtcNow.ToString("o")
     });
 });
-
-app.UsePathBase("/conflicted");
-
-app.UseCors();
-
-app.UseStaticFiles();
 
 // Map controllers
 app.MapControllers();
