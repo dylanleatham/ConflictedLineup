@@ -25,3 +25,30 @@ jobs:
       resource-group: conflicted-rg
       image-tag: ${{ needs.build.outputs.image-tag }}
     secrets: inherit
+
+  configure:
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set container app secrets
+        run: |
+          az containerapp secret set \
+            --name conflicted-ca \
+            --resource-group conflicted-rg \
+            --secrets anthropic-api-key=${{ secrets.ANTHROPIC_API_KEY }}
+
+          az containerapp update \
+            --name conflicted-ca \
+            --resource-group conflicted-rg \
+            --set-env-vars ANTHROPIC_API_KEY=secretref:anthropic-api-key
