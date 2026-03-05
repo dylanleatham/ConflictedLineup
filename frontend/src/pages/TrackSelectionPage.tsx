@@ -23,6 +23,7 @@ interface ArtistResultCardProps {
 }
 
 function ArtistResultCard({ result }: ArtistResultCardProps) {
+  const familiarIds = new Set(result.familiarTracks.map(t => t.spotifyTrackId));
   const allTracks = [
     ...result.familiarTracks,
     ...result.topTracks,
@@ -44,8 +45,11 @@ function ArtistResultCard({ result }: ArtistResultCardProps) {
       </div>
       <ul className="track-list">
         {allTracks.map((track) => (
-          <li key={track.spotifyTrackId} className="track-item">
-            <span className="track-name">{track.name}</span>
+          <li key={track.spotifyTrackId} className={`track-item${familiarIds.has(track.spotifyTrackId) ? ' track-familiar' : ''}`}>
+            <span className="track-name">
+              {familiarIds.has(track.spotifyTrackId) && <span className="familiar-badge">In Library</span>}
+              {track.name}
+            </span>
             <span className="track-duration">{formatDuration(track.durationMs)}</span>
           </li>
         ))}

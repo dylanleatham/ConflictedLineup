@@ -25,9 +25,9 @@ public class SpotifyTrackService : ISpotifyTrackService
     private readonly ISpotifySearchService _searchService;
     private readonly ISpotifyTopTracksService _topTracksService;
     private readonly ISpotifyRecentReleasesService _recentReleasesService;
+    private readonly ISpotifyUserLibraryService _userLibraryService;
     private readonly ILogger<SpotifyTrackService> _logger;
     private const int MaxRetries = 3;
-    private const int TracksPerArtist = 4;
     private const int ArtistBatchSize = 50;
     private const int AlbumBatchSize = 20;
 
@@ -35,24 +35,26 @@ public class SpotifyTrackService : ISpotifyTrackService
         ISpotifySearchService searchService,
         ISpotifyTopTracksService topTracksService,
         ISpotifyRecentReleasesService recentReleasesService,
+        ISpotifyUserLibraryService userLibraryService,
         ILogger<SpotifyTrackService> logger)
     {
         _searchService = searchService;
         _topTracksService = topTracksService;
         _recentReleasesService = recentReleasesService;
+        _userLibraryService = userLibraryService;
         _logger = logger;
     }
 
-    public SpotifyTrackService(
-        ISpotifySearchService searchService,
-        ISpotifyTopTracksService topTracksService,
-        ISpotifyRecentReleasesService recentReleasesService,
-        ISpotifyUserLibraryService userLibraryService,
-        ILogger<SpotifyTrackService> logger)
-        : this(searchService, topTracksService, recentReleasesService, logger)
+    /// <summary>
+    /// Returns track allocation based on artist popularity tier.
+    /// High (70+): 6 tracks, Medium (40-69): 4 tracks, Low (&lt;40): 2 tracks
+    /// </summary>
+    private static int GetTracksForPopularity(int popularity) => popularity switch
     {
-        // Backward-compatible constructor - userLibraryService no longer used
-    }
+        >= 70 => 6,
+        >= 40 => 4,
+        _ => 2
+    };
 
     public async Task<TrackSelectionResponse> SelectTracksAsync(
         List<string> artistNames,
@@ -111,8 +113,23 @@ public class SpotifyTrackService : ISpotifyTrackService
             spotify,
             searchResults.Select(r => (r.ArtistId, r.SpotifyName, r.SearchName)).ToList());
 
-        // Phase 3: Fetch top tracks per artist
-        _logger.LogInformation("Phase 3: Fetching top tracks...");
+        // Phase 3: Scan user library for familiar tracks (single bulk scan)
+        _logger.LogInformation("Phase 3: Scanning user library for familiar tracks...");
+        Dictionary<string, List<TrackInfo>> familiarTracksByArtist;
+        try
+        {
+            var userProfile = await spotify.UserProfile.Current();
+            familiarTracksByArtist = await _userLibraryService.ScanUserLibraryAsync(spotify, userProfile.Id);
+            _logger.LogInformation("Library scan found familiar tracks for {Count} artists", familiarTracksByArtist.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Library scan failed, continuing without familiar tracks");
+            familiarTracksByArtist = new Dictionary<string, List<TrackInfo>>();
+        }
+
+        // Phase 4: Fetch top tracks per artist
+        _logger.LogInformation("Phase 4: Fetching top tracks...");
         var topTracks = new Dictionary<string, List<TrackCandidate>>();
 
         foreach (var artist in artistsWithPopularity)
@@ -132,8 +149,8 @@ public class SpotifyTrackService : ISpotifyTrackService
                 .ToList();
         }
 
-        // Phase 4: Fetch recent album IDs per artist
-        _logger.LogInformation("Phase 4: Fetching recent album IDs...");
+        // Phase 5: Fetch recent album IDs per artist
+        _logger.LogInformation("Phase 5: Fetching recent album IDs...");
         var artistAlbumIds = new Dictionary<string, List<string>>();
 
         foreach (var artist in artistsWithPopularity)
@@ -142,12 +159,12 @@ public class SpotifyTrackService : ISpotifyTrackService
             artistAlbumIds[artist.ArtistId] = albumIds;
         }
 
-        // Phase 5: Batch fetch album tracks
-        _logger.LogInformation("Phase 5: Batch fetching album tracks...");
+        // Phase 6: Batch fetch album tracks
+        _logger.LogInformation("Phase 6: Batch fetching album tracks...");
         var recentTracks = await BatchFetchAlbumTracksAsync(spotify, artistsWithPopularity, artistAlbumIds);
 
-        // Phase 6: Build playlist locally
-        _logger.LogInformation("Phase 6: Building playlist with cross-artist deduplication...");
+        // Phase 7: Build playlist with popularity-weighted allocation
+        _logger.LogInformation("Phase 7: Building playlist with popularity-weighted allocation...");
         var claimedUris = new HashSet<string>();
         var results = new List<ArtistTrackResult>();
 
@@ -156,15 +173,33 @@ public class SpotifyTrackService : ISpotifyTrackService
 
         foreach (var artist in sortedArtists)
         {
+            var maxTracks = GetTracksForPopularity(artist.Popularity);
+            var selectedFamiliar = new List<TrackInfo>();
             var selectedTop = new List<TrackInfo>();
             var selectedRecent = new List<TrackInfo>();
 
-            // Claim from top tracks first
+            int TotalSelected() => selectedFamiliar.Count + selectedTop.Count + selectedRecent.Count;
+
+            // Priority 1: Familiar tracks (songs user already knows)
+            if (familiarTracksByArtist.TryGetValue(artist.ArtistId, out var artistFamiliarTracks))
+            {
+                foreach (var track in artistFamiliarTracks)
+                {
+                    if (TotalSelected() >= maxTracks) break;
+                    var uri = $"spotify:track:{track.SpotifyTrackId}";
+                    if (claimedUris.Add(uri))
+                    {
+                        selectedFamiliar.Add(track);
+                    }
+                }
+            }
+
+            // Priority 2: Top tracks
             if (topTracks.TryGetValue(artist.ArtistId, out var artistTopTracks))
             {
                 foreach (var track in artistTopTracks.OrderBy(t => t.Priority))
                 {
-                    if (selectedTop.Count + selectedRecent.Count >= TracksPerArtist) break;
+                    if (TotalSelected() >= maxTracks) break;
                     if (claimedUris.Add(track.TrackUri))
                     {
                         selectedTop.Add(MapToTrackInfo(track));
@@ -172,12 +207,12 @@ public class SpotifyTrackService : ISpotifyTrackService
                 }
             }
 
-            // Fill remaining with recent tracks
+            // Priority 3: Recent tracks
             if (recentTracks.TryGetValue(artist.ArtistId, out var artistRecentTracks))
             {
                 foreach (var track in artistRecentTracks.OrderBy(t => t.Priority))
                 {
-                    if (selectedTop.Count + selectedRecent.Count >= TracksPerArtist) break;
+                    if (TotalSelected() >= maxTracks) break;
                     if (claimedUris.Add(track.TrackUri))
                     {
                         selectedRecent.Add(MapToTrackInfo(track));
@@ -186,13 +221,13 @@ public class SpotifyTrackService : ISpotifyTrackService
             }
 
             // Only include artists that have at least one track
-            if (selectedTop.Count + selectedRecent.Count > 0)
+            if (TotalSelected() > 0)
             {
                 var result = new ArtistTrackResult(
                     ArtistName: artist.ArtistName,
                     SpotifyArtistId: artist.ArtistId,
                     Popularity: artist.Popularity,
-                    FamiliarTracks: new List<TrackInfo>(),
+                    FamiliarTracks: selectedFamiliar,
                     TopTracks: selectedTop,
                     RecentTracks: selectedRecent
                 );
@@ -200,8 +235,8 @@ public class SpotifyTrackService : ISpotifyTrackService
                 results.Add(result);
 
                 _logger.LogInformation(
-                    "Selected {TopCount} top + {RecentCount} recent tracks for {ArtistName} (popularity: {Popularity})",
-                    selectedTop.Count, selectedRecent.Count, artist.ArtistName, artist.Popularity);
+                    "Selected {FamiliarCount} familiar + {TopCount} top + {RecentCount} recent tracks for {ArtistName} (popularity: {Popularity}, max: {MaxTracks})",
+                    selectedFamiliar.Count, selectedTop.Count, selectedRecent.Count, artist.ArtistName, artist.Popularity, maxTracks);
             }
             else
             {

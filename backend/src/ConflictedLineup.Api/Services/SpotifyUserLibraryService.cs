@@ -6,12 +6,15 @@ namespace ConflictedLineup.Api.Services;
 public interface ISpotifyUserLibraryService
 {
     /// <summary>
-    /// Get familiar tracks from user's saved tracks and owned playlists
+    /// Scan user's saved tracks and owned playlists once, returning all tracks grouped by artist ID.
+    /// Much more efficient than per-artist scanning — O(pages) instead of O(artists * pages).
     /// </summary>
-    /// <param name="spotify">Authenticated Spotify client</param>
-    /// <param name="artistId">Spotify artist ID to find tracks for</param>
-    /// <param name="userId">Current user's Spotify user ID (for filtering owned playlists)</param>
-    /// <returns>List of up to 3 familiar tracks</returns>
+    Task<Dictionary<string, List<TrackInfo>>> ScanUserLibraryAsync(ISpotifyClient spotify, string userId);
+
+    /// <summary>
+    /// Get familiar tracks from user's saved tracks and owned playlists for a single artist.
+    /// Prefer ScanUserLibraryAsync for bulk operations.
+    /// </summary>
     Task<List<TrackInfo>> GetFamiliarTracksAsync(ISpotifyClient spotify, string artistId, string userId);
 }
 
@@ -28,6 +31,132 @@ public class SpotifyUserLibraryService : ISpotifyUserLibraryService
     public SpotifyUserLibraryService(ILogger<SpotifyUserLibraryService> logger)
     {
         _logger = logger;
+    }
+
+    public async Task<Dictionary<string, List<TrackInfo>>> ScanUserLibraryAsync(ISpotifyClient spotify, string userId)
+    {
+        var tracksByArtist = new Dictionary<string, List<TrackInfo>>();
+
+        try
+        {
+            // Step 1: Scan saved tracks (up to 100)
+            _logger.LogInformation("Scanning user's saved tracks...");
+            await ScanSavedTracksBulkAsync(spotify, tracksByArtist);
+
+            // Step 2: Scan user's owned playlists (up to 10 playlists, 100 tracks each)
+            _logger.LogInformation("Scanning user's playlists...");
+            await ScanUserPlaylistsBulkAsync(spotify, userId, tracksByArtist);
+
+            var totalTracks = tracksByArtist.Values.Sum(list => list.Count);
+            var totalArtists = tracksByArtist.Count;
+            _logger.LogInformation("Library scan complete: found {TotalTracks} familiar tracks across {TotalArtists} artists",
+                totalTracks, totalArtists);
+        }
+        catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+        {
+            _logger.LogWarning("Rate limited during library scan, returning partial results ({Count} artists found so far)",
+                tracksByArtist.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error during library scan, returning partial results ({Count} artists found so far)",
+                tracksByArtist.Count);
+        }
+
+        return tracksByArtist;
+    }
+
+    private async Task ScanSavedTracksBulkAsync(ISpotifyClient spotify, Dictionary<string, List<TrackInfo>> tracksByArtist)
+    {
+        var scannedCount = 0;
+        var firstPage = await ExecuteWithRetryAsync(async () =>
+            await spotify.Library.GetTracks(new LibraryTracksRequest { Limit = 50 }));
+
+        if (firstPage == null) return;
+
+        await foreach (var savedTrack in spotify.Paginate(firstPage))
+        {
+            scannedCount++;
+
+            if (savedTrack.Track?.Artists != null)
+            {
+                foreach (var artist in savedTrack.Track.Artists)
+                {
+                    if (string.IsNullOrEmpty(artist.Id)) continue;
+
+                    if (!tracksByArtist.TryGetValue(artist.Id, out var list))
+                    {
+                        list = new List<TrackInfo>();
+                        tracksByArtist[artist.Id] = list;
+                    }
+
+                    // Cap per-artist familiar tracks
+                    if (list.Count < MaxFamiliarTracks)
+                    {
+                        list.Add(MapSavedTrackToTrackInfo(savedTrack.Track));
+                    }
+                }
+            }
+
+            if (scannedCount >= MaxSavedTracksToScan) break;
+        }
+
+        _logger.LogDebug("Scanned {Count} saved tracks", scannedCount);
+    }
+
+    private async Task ScanUserPlaylistsBulkAsync(ISpotifyClient spotify, string userId, Dictionary<string, List<TrackInfo>> tracksByArtist)
+    {
+        var playlistsPage = await ExecuteWithRetryAsync(async () =>
+            await spotify.Playlists.CurrentUsers(new PlaylistCurrentUsersRequest { Limit = 50 }));
+
+        if (playlistsPage == null) return;
+
+        var playlistsScanned = 0;
+        var seenTrackIds = new HashSet<string>(
+            tracksByArtist.Values.SelectMany(list => list.Select(t => t.SpotifyTrackId)));
+
+        await foreach (var playlist in spotify.Paginate(playlistsPage))
+        {
+            if (playlist.Owner?.Id != userId) continue;
+
+            playlistsScanned++;
+            if (playlistsScanned > MaxPlaylistsToScan) break;
+
+            var playlistTracksPage = await ExecuteWithRetryAsync(async () =>
+                await spotify.Playlists.GetItems(playlist.Id!, new PlaylistGetItemsRequest { Limit = 50 }));
+
+            if (playlistTracksPage == null) continue;
+
+            var tracksInPlaylist = 0;
+
+            await foreach (var playlistTrack in spotify.Paginate(playlistTracksPage))
+            {
+                tracksInPlaylist++;
+                if (tracksInPlaylist > MaxTracksPerPlaylist) break;
+
+                if (playlistTrack.Track is FullTrack track && !seenTrackIds.Contains(track.Id))
+                {
+                    foreach (var artist in track.Artists ?? Enumerable.Empty<SimpleArtist>())
+                    {
+                        if (string.IsNullOrEmpty(artist.Id)) continue;
+
+                        if (!tracksByArtist.TryGetValue(artist.Id, out var list))
+                        {
+                            list = new List<TrackInfo>();
+                            tracksByArtist[artist.Id] = list;
+                        }
+
+                        if (list.Count < MaxFamiliarTracks)
+                        {
+                            list.Add(MapFullTrackToTrackInfo(track));
+                            seenTrackIds.Add(track.Id);
+                        }
+                    }
+                }
+            }
+        }
+
+        _logger.LogDebug("Scanned {Count} owned playlists", playlistsScanned);
     }
 
     public async Task<List<TrackInfo>> GetFamiliarTracksAsync(ISpotifyClient spotify, string artistId, string userId)
