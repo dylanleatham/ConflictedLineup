@@ -45,3 +45,32 @@ export interface TrackSelectionRequest {
   artistNames: string[];
   spotifyAccessToken: string;
 }
+
+/**
+ * SSE progress event during track selection
+ */
+export interface ProgressEvent {
+  type: 'progress';
+  current: number;
+  total: number;
+  artistName: string;
+  phase: string;
+}
+
+/**
+ * SSE complete event with final results
+ */
+export interface CompleteEvent {
+  type: 'complete';
+  result: TrackSelectionResponse;
+}
+
+/**
+ * SSE error event
+ */
+export interface ErrorEvent {
+  type: 'error';
+  message: string;
+}
+
+export type SSEEvent = ProgressEvent | CompleteEvent | ErrorEvent;

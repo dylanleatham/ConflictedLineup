@@ -80,5 +80,6 @@ public record ArtistProgressUpdate(
     int Current,
     int Total,
     string ArtistName,
-    ArtistTrackResult? Result
+    string Phase,
+    ArtistTrackResult? Result = null
 );

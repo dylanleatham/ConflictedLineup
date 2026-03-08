@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, CircularProgress, Collapse, IconButton } from '@mui/material';
+import { Alert, CircularProgress, Collapse, IconButton, LinearProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useAuth } from '../auth';
-import { selectTracksForArtists } from '../services/trackSelectionApi';
+import { selectTracksStreaming } from '../services/trackSelectionApi';
 import { createPlaylist } from '../services/playlistApi';
 import { PlaylistResultsState } from '../types/playlist';
 import { TrackSelectionResponse, ArtistTrackResult, SkippedArtist } from '../types/trackSelection';
@@ -115,6 +115,10 @@ export function TrackSelectionPage() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackSelectionResponse | null>(null);
   const [creatingPlaylist, setCreatingPlaylist] = useState(false);
+  const [progressCurrent, setProgressCurrent] = useState(0);
+  const [progressTotal, setProgressTotal] = useState(0);
+  const [currentArtist, setCurrentArtist] = useState('');
+  const [currentPhase, setCurrentPhase] = useState('');
 
   // Track if we've already started fetching to prevent duplicate calls
   const hasFetched = useRef(false);
@@ -126,9 +130,22 @@ export function TrackSelectionPage() {
 
     setLoading(true);
     setError(null);
+    setProgressCurrent(0);
+    setProgressTotal(0);
+    setCurrentArtist('');
+    setCurrentPhase('');
 
     try {
-      const response = await selectTracksForArtists(artistNames, token);
+      const response = await selectTracksStreaming(
+        artistNames,
+        token,
+        (current, total, artistName, phase) => {
+          setProgressCurrent(current);
+          setProgressTotal(total);
+          setCurrentArtist(artistName);
+          setCurrentPhase(phase);
+        }
+      );
       setResult(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Track selection failed');
@@ -215,12 +232,42 @@ export function TrackSelectionPage() {
     <div className="track-selection-page">
       {loading && (
         <div className="loading-section">
-          <CircularProgress size={48} sx={{ color: '#1DB954' }} />
-          <h2>Selecting Tracks</h2>
-          <p>Processing {artistNames.length} artists...</p>
-          <p className="loading-hint">
-            Finding the best tracks for each artist
-          </p>
+          {progressTotal > 0 ? (
+            <>
+              <h2>Selecting Tracks</h2>
+              <div className="progress-bar-container">
+                <LinearProgress
+                  variant="determinate"
+                  value={(progressCurrent / progressTotal) * 100}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: 'var(--ash)',
+                    '& .MuiLinearProgress-bar': {
+                      background: 'var(--gradient-primary)',
+                      borderRadius: 4,
+                      transition: 'transform 0.3s ease',
+                    },
+                  }}
+                />
+              </div>
+              <p className="progress-status">
+                {progressCurrent} / {progressTotal} artists
+              </p>
+              {currentArtist && (
+                <p className="progress-artist-name">
+                  {currentPhase === 'Searching' ? 'Searching for' : 'Fetching tracks for'}{' '}
+                  <strong>{currentArtist}</strong>
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <CircularProgress size={48} sx={{ color: 'var(--neon-cyan)' }} />
+              <h2>Selecting Tracks</h2>
+              <p>Preparing {artistNames.length} artists...</p>
+            </>
+          )}
         </div>
       )}
 

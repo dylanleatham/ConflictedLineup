@@ -30,6 +30,8 @@ public class SpotifyTrackService : ISpotifyTrackService
     private const int MaxRetries = 3;
     private const int ArtistBatchSize = 50;
     private const int AlbumBatchSize = 20;
+    private const int PacingDelayMs = 50;
+    private const int RecentReleasesArtistThreshold = 50;
 
     public SpotifyTrackService(
         ISpotifySearchService searchService,
@@ -82,7 +84,15 @@ public class SpotifyTrackService : ISpotifyTrackService
         for (int i = 0; i < uniqueArtistNames.Count; i++)
         {
             var artistName = uniqueArtistNames[i];
-            var searchResult = await _searchService.SearchArtistAsync(spotify, artistName);
+
+            progress?.Report(new ArtistProgressUpdate(
+                Current: i + 1,
+                Total: uniqueArtistNames.Count,
+                ArtistName: artistName,
+                Phase: "Searching"));
+
+            var searchResult = await ExecuteWithRetryAsync(async () =>
+                (await _searchService.SearchArtistAsync(spotify, artistName))!);
 
             if (searchResult == null)
             {
@@ -100,6 +110,9 @@ public class SpotifyTrackService : ISpotifyTrackService
             }
 
             searchResults.Add((artistName, searchResult.ArtistId, searchResult.ArtistName));
+
+            if (i < uniqueArtistNames.Count - 1)
+                await Task.Delay(PacingDelayMs);
         }
 
         if (searchResults.Count == 0)
@@ -122,36 +135,69 @@ public class SpotifyTrackService : ISpotifyTrackService
         _logger.LogInformation("Phase 3: Fetching top tracks...");
         var topTracks = new Dictionary<string, List<TrackCandidate>>();
 
-        foreach (var artist in artistsWithPopularity)
+        for (int i = 0; i < artistsWithPopularity.Count; i++)
         {
-            var tracks = await _topTracksService.GetTopTracksAsync(spotify, artist.ArtistId);
-            topTracks[artist.ArtistId] = tracks
-                .Select((t, index) => new TrackCandidate(
-                    TrackUri: $"spotify:track:{t.SpotifyTrackId}",
-                    TrackId: t.SpotifyTrackId,
-                    TrackName: t.Name,
-                    ArtistId: artist.ArtistId,
-                    ArtistName: t.ArtistName,
-                    AlbumName: t.AlbumName,
-                    DurationMs: t.DurationMs,
-                    PreviewUrl: t.PreviewUrl,
-                    Priority: index))
-                .ToList();
+            var artist = artistsWithPopularity[i];
+
+            progress?.Report(new ArtistProgressUpdate(
+                Current: i + 1,
+                Total: artistsWithPopularity.Count,
+                ArtistName: artist.ArtistName,
+                Phase: "Fetching tracks"));
+
+            var tracks = await ExecuteWithRetryAsync(async () =>
+                await _topTracksService.GetTopTracksAsync(spotify, artist.ArtistId));
+
+            if (tracks != null)
+            {
+                topTracks[artist.ArtistId] = tracks
+                    .Select((t, index) => new TrackCandidate(
+                        TrackUri: $"spotify:track:{t.SpotifyTrackId}",
+                        TrackId: t.SpotifyTrackId,
+                        TrackName: t.Name,
+                        ArtistId: artist.ArtistId,
+                        ArtistName: t.ArtistName,
+                        AlbumName: t.AlbumName,
+                        DurationMs: t.DurationMs,
+                        PreviewUrl: t.PreviewUrl,
+                        Priority: index))
+                    .ToList();
+            }
+
+            if (i < artistsWithPopularity.Count - 1)
+                await Task.Delay(PacingDelayMs);
         }
 
-        // Phase 5: Fetch recent album IDs per artist
-        _logger.LogInformation("Phase 5: Fetching recent album IDs...");
-        var artistAlbumIds = new Dictionary<string, List<string>>();
+        // Phase 5+6: Fetch recent releases (skip for large lineups to reduce API calls)
+        var recentTracks = new Dictionary<string, List<TrackCandidate>>();
+        var skipRecentReleases = artistsWithPopularity.Count > RecentReleasesArtistThreshold;
 
-        foreach (var artist in artistsWithPopularity)
+        if (skipRecentReleases)
         {
-            var albumIds = await _recentReleasesService.GetRecentAlbumIdsAsync(spotify, artist.ArtistId, 2);
-            artistAlbumIds[artist.ArtistId] = albumIds;
+            _logger.LogInformation("Skipping recent releases phase for {Count} artists (threshold: {Threshold})",
+                artistsWithPopularity.Count, RecentReleasesArtistThreshold);
+            foreach (var artist in artistsWithPopularity)
+                recentTracks[artist.ArtistId] = new List<TrackCandidate>();
         }
+        else
+        {
+            _logger.LogInformation("Phase 5: Fetching recent album IDs...");
+            var artistAlbumIds = new Dictionary<string, List<string>>();
 
-        // Phase 6: Batch fetch album tracks
-        _logger.LogInformation("Phase 6: Batch fetching album tracks...");
-        var recentTracks = await BatchFetchAlbumTracksAsync(spotify, artistsWithPopularity, artistAlbumIds);
+            for (int i = 0; i < artistsWithPopularity.Count; i++)
+            {
+                var artist = artistsWithPopularity[i];
+                var albumIds = await ExecuteWithRetryAsync(async () =>
+                    await _recentReleasesService.GetRecentAlbumIdsAsync(spotify, artist.ArtistId, 2));
+                artistAlbumIds[artist.ArtistId] = albumIds ?? new List<string>();
+
+                if (i < artistsWithPopularity.Count - 1)
+                    await Task.Delay(PacingDelayMs);
+            }
+
+            _logger.LogInformation("Phase 6: Batch fetching album tracks...");
+            recentTracks = await BatchFetchAlbumTracksAsync(spotify, artistsWithPopularity, artistAlbumIds);
+        }
 
         // Phase 7: Build playlist with popularity-weighted allocation
         _logger.LogInformation("Phase 7: Building playlist with popularity-weighted allocation...");
@@ -224,27 +270,11 @@ public class SpotifyTrackService : ISpotifyTrackService
         // Reverse so headliners (most popular) come first
         results.Reverse();
 
-        // Report progress for all artists at the end (since we process them all at once now)
-        for (int i = 0; i < results.Count; i++)
-        {
-            progress?.Report(new ArtistProgressUpdate(
-                Current: i + 1,
-                Total: results.Count + skipped.Count,
-                ArtistName: results[i].ArtistName,
-                Result: results[i]
-            ));
-        }
-
-        // Report skipped artists
-        foreach (var skippedArtist in skipped)
-        {
-            progress?.Report(new ArtistProgressUpdate(
-                Current: results.Count + skipped.IndexOf(skippedArtist) + 1,
-                Total: results.Count + skipped.Count,
-                ArtistName: skippedArtist.Name,
-                Result: null
-            ));
-        }
+        progress?.Report(new ArtistProgressUpdate(
+            Current: artistsWithPopularity.Count,
+            Total: artistsWithPopularity.Count,
+            ArtistName: "",
+            Phase: "Building playlist"));
 
         _logger.LogInformation(
             "Track selection complete: {Processed} artists processed, {Skipped} skipped, {UniqueTrackCount} unique tracks claimed",

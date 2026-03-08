@@ -41,6 +41,30 @@
   color: var(--neon-cyan);
 }
 
+/* Progress Bar */
+.progress-bar-container {
+  width: 100%;
+  max-width: 400px;
+  margin: var(--space-5) auto var(--space-3);
+}
+
+.progress-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: var(--space-2) 0;
+}
+
+.progress-artist-name {
+  font-size: var(--text-base);
+  color: var(--text-muted);
+  margin: var(--space-1) 0;
+}
+
+.progress-artist-name strong {
+  color: var(--neon-cyan);
+}
+
 /* Error Section */
 .error-section {
   display: flex;
