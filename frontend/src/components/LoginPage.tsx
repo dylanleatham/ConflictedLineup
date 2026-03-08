@@ -60,11 +60,11 @@ export function LoginPage() {
 
         <div className="login-explanation">
           <p>
-            Search for any festival and we'll build you a playlist with familiar favorites,
-            top tracks, and recent releases from every artist on the lineup.
+            Search for any festival and we'll build you a playlist with
+            top tracks and recent releases from every artist on the lineup.
           </p>
           <p className="why-spotify">
-            Connect with Spotify to create playlists and discover tracks you already know.
+            Connect with Spotify to create playlists and discover new music.
           </p>
         </div>
 
