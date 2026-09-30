@@ -6,23 +6,20 @@ namespace ConflictedLineup.Api.Services;
 /// <summary>
 /// Result of searching for an artist on Spotify
 /// </summary>
-public record ArtistSearchResult(string ArtistId, string ArtistName, int Followers);
+public record ArtistSearchResult(string ArtistId, string ArtistName);
 
 public interface ISpotifySearchService
 {
     /// <summary>
-    /// Search for an artist by name and return the first result
+    /// Search for an artist by name and return the first result whose name actually matches
     /// </summary>
-    /// <param name="spotify">Authenticated Spotify client</param>
-    /// <param name="artistName">Name of artist to search for</param>
     /// <returns>Artist info if found, null otherwise</returns>
-    Task<ArtistSearchResult?> SearchArtistAsync(ISpotifyClient spotify, string artistName);
+    Task<ArtistSearchResult?> SearchArtistAsync(ISpotifyClient spotify, string artistName, CancellationToken cancel = default);
 }
 
-public partial class SpotifySearchService : ISpotifySearchService
+public class SpotifySearchService : ISpotifySearchService
 {
     private readonly ILogger<SpotifySearchService> _logger;
-    private const int MaxRetries = 3;
     private const string Market = "US";
 
     public SpotifySearchService(ILogger<SpotifySearchService> logger)
@@ -30,121 +27,80 @@ public partial class SpotifySearchService : ISpotifySearchService
         _logger = logger;
     }
 
-    public async Task<ArtistSearchResult?> SearchArtistAsync(ISpotifyClient spotify, string artistName)
+    public async Task<ArtistSearchResult?> SearchArtistAsync(ISpotifyClient spotify, string artistName, CancellationToken cancel = default)
     {
-        return await ExecuteWithRetryAsync(async () =>
+        // Punctuation confuses Spotify's search (e.g. "Hol!" returns "Wooli" as the top result),
+        // so search with a sanitized query but compare results against the original name
+        var searchRequest = new SearchRequest(SearchRequest.Types.Artist, ArtistNameMatcher.SanitizeQuery(artistName))
         {
-            // Sanitize the search query to avoid punctuation confusing Spotify's search
-            // (e.g., "Hol!" returning "Wooli" as top result)
-            // We still compare results against the original unsanitized name below
-            var sanitizedQuery = SanitizeSearchQuery(artistName);
+            Market = Market,
+            Limit = 5 // Several results, so a near-miss top result doesn't hide the real artist
+        };
 
-            if (sanitizedQuery != artistName)
-            {
-                _logger.LogDebug("Sanitized search query from '{Original}' to '{Sanitized}'",
-                    artistName, sanitizedQuery);
-            }
+        var searchResponse = await spotify.Search.Item(searchRequest, cancel);
+        var candidates = searchResponse.Artists.Items ?? [];
 
-            var searchRequest = new SearchRequest(SearchRequest.Types.Artist, sanitizedQuery)
-            {
-                Market = Market,
-                Limit = 5 // Get multiple results to find best match
-            };
-
-            var searchResponse = await spotify.Search.Item(searchRequest);
-
-            if (searchResponse.Artists.Items?.Count > 0)
-            {
-                // Try to find a matching artist from the results
-                foreach (var artist in searchResponse.Artists.Items)
-                {
-                    if (IsArtistNameMatch(artistName, artist.Name))
-                    {
-                        _logger.LogDebug("Found matching artist '{SpotifyName}' (ID: {Id}) for search '{SearchName}'",
-                            artist.Name, artist.Id, artistName);
-
-                        return new ArtistSearchResult(
-                            ArtistId: artist.Id,
-                            ArtistName: artist.Name,
-                            Followers: artist.Followers?.Total ?? 0
-                        );
-                    }
-                }
-
-                // No match found - log the mismatch
-                var firstResult = searchResponse.Artists.Items[0];
-                _logger.LogWarning(
-                    "Artist name mismatch: searched for '{SearchName}' but Spotify returned '{SpotifyName}' - skipping",
-                    artistName, firstResult.Name);
-                return null;
-            }
-
-            _logger.LogDebug("No artist found for search '{ArtistName}'", artistName);
-            return null;
-        });
-    }
-
-    /// <summary>
-    /// Check if the Spotify artist name matches the search term.
-    /// Normalizes both names for comparison (lowercase, remove punctuation, handle "The" prefix).
-    /// </summary>
-    private bool IsArtistNameMatch(string searchName, string spotifyName)
-    {
-        var normalizedSearch = NormalizeArtistName(searchName);
-        var normalizedSpotify = NormalizeArtistName(spotifyName);
-
-        // Exact match after normalization
-        if (normalizedSearch == normalizedSpotify)
-            return true;
-
-        // Check if one contains the other (handles "DJ Snake" matching "Snake" etc.)
-        // But require at least 80% overlap to avoid false positives
-        if (normalizedSearch.Length > 0 && normalizedSpotify.Length > 0)
+        var match = candidates.FirstOrDefault(a => ArtistNameMatcher.IsMatch(artistName, a.Name));
+        if (match != null)
         {
-            var shorter = normalizedSearch.Length <= normalizedSpotify.Length ? normalizedSearch : normalizedSpotify;
-            var longer = normalizedSearch.Length > normalizedSpotify.Length ? normalizedSearch : normalizedSpotify;
-
-            // If the shorter name is contained in the longer one and is at least 80% of its length
-            if (longer.Contains(shorter) && (double)shorter.Length / longer.Length >= 0.8)
-                return true;
+            return new ArtistSearchResult(match.Id, match.Name);
         }
 
-        return false;
+        if (candidates.Count > 0)
+        {
+            _logger.LogWarning("Artist name mismatch: searched for '{SearchName}' but Spotify returned '{SpotifyName}' - skipping",
+                artistName, candidates[0].Name);
+        }
+
+        return null;
+    }
+}
+
+/// <summary>
+/// Decides whether a Spotify search result is the artist a lineup named. Lineups and Spotify disagree on
+/// casing, punctuation and "The" prefixes; a plain string compare skips real artists, and trusting the top
+/// result puts the wrong artist in the playlist.
+/// </summary>
+public static partial class ArtistNameMatcher
+{
+    /// <summary>
+    /// Minimum share of the longer name the shorter one must cover for a containment match,
+    /// so "Snake" can't match "DJ Snake" but a missing suffix still can.
+    /// </summary>
+    private const double MinContainmentRatio = 0.8;
+
+    public static bool IsMatch(string searchName, string spotifyName)
+    {
+        var a = Normalize(searchName);
+        var b = Normalize(spotifyName);
+
+        if (a.Length == 0 || b.Length == 0)
+            return false;
+
+        if (a == b)
+            return true;
+
+        var (shorter, longer) = a.Length <= b.Length ? (a, b) : (b, a);
+        return longer.Contains(shorter) && (double)shorter.Length / longer.Length >= MinContainmentRatio;
     }
 
     /// <summary>
-    /// Sanitize the search query for Spotify API.
-    /// Removes punctuation that can confuse Spotify's search algorithm
-    /// while preserving the core artist name for matching.
+    /// Replace punctuation with spaces and collapse whitespace, keeping letters and digits in any script.
     /// </summary>
-    private string SanitizeSearchQuery(string query)
-    {
-        // Remove punctuation but keep alphanumeric characters and spaces
-        var sanitized = NonAlphanumericRegex().Replace(query, " ");
-        sanitized = WhitespaceRegex().Replace(sanitized, " ").Trim();
-        return sanitized;
-    }
+    public static string SanitizeQuery(string query) =>
+        WhitespaceRegex().Replace(NonAlphanumericRegex().Replace(query, " "), " ").Trim();
 
     /// <summary>
-    /// Normalize artist name for comparison:
-    /// - Lowercase
-    /// - Remove "the " prefix
-    /// - Remove punctuation and extra whitespace
+    /// Lowercase, drop a leading "the ", then sanitize.
     /// </summary>
-    private string NormalizeArtistName(string name)
+    public static string Normalize(string name)
     {
-        // Lowercase
-        var normalized = name.ToLowerInvariant();
+        var normalized = name.Trim().ToLowerInvariant();
 
-        // Remove "the " prefix
         if (normalized.StartsWith("the "))
             normalized = normalized[4..];
 
-        // Remove punctuation and normalize whitespace
-        normalized = NonAlphanumericRegex().Replace(normalized, " ");
-        normalized = WhitespaceRegex().Replace(normalized, " ").Trim();
-
-        return normalized;
+        return SanitizeQuery(normalized);
     }
 
     [GeneratedRegex(@"[^\w\s]")]
@@ -152,40 +108,4 @@ public partial class SpotifySearchService : ISpotifySearchService
 
     [GeneratedRegex(@"\s+")]
     private static partial Regex WhitespaceRegex();
-
-    private async Task<T?> ExecuteWithRetryAsync<T>(Func<Task<T?>> apiCall)
-    {
-        for (int attempt = 0; attempt < MaxRetries; attempt++)
-        {
-            try
-            {
-                return await apiCall();
-            }
-            catch (APIException ex) when (ex.Response?.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            {
-                if (attempt == MaxRetries - 1)
-                {
-                    _logger.LogError("Max retries ({MaxRetries}) exceeded for Spotify API call", MaxRetries);
-                    throw;
-                }
-
-                // Read Retry-After header (in seconds), default to 5 if not present
-                var retryAfterSeconds = 5;
-                if (ex.Response?.Headers?.TryGetValue("Retry-After", out var retryAfterHeader) == true)
-                {
-                    if (int.TryParse(retryAfterHeader, out var parsed))
-                    {
-                        retryAfterSeconds = parsed;
-                    }
-                }
-
-                _logger.LogWarning("Rate limited by Spotify API. Waiting {Seconds}s before retry (attempt {Attempt}/{MaxRetries})",
-                    retryAfterSeconds, attempt + 1, MaxRetries);
-
-                await Task.Delay(TimeSpan.FromSeconds(retryAfterSeconds));
-            }
-        }
-
-        return default;
-    }
 }

@@ -1,22 +1,19 @@
 namespace ConflictedLineup.Api.Models;
 
 /// <summary>
-/// Raw response from Claude lineup extraction
+/// The JSON object the extraction prompt asks Claude to return
 /// </summary>
 public record LineupExtractionResponse(
-    string Festival,
-    string Source,       // "web" | "image"
+    string? Festival,
+    string? Source,      // "web" | "image"
     string? SourceUrl,
     List<string> Artists
 );
 
 /// <summary>
-/// Information about an extracted artist with confidence level
+/// An artist found on a lineup
 /// </summary>
-public record ArtistInfo(
-    string Name,
-    string Confidence  // "high" | "uncertain"
-);
+public record ArtistInfo(string Name);
 
 /// <summary>
 /// Result of artist extraction from a festival poster image

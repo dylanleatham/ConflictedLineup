@@ -1,4 +1,3 @@
-using System.Net;
 using SpotifyAPI.Web;
 using ConflictedLineup.Api.Models;
 
@@ -6,146 +5,70 @@ namespace ConflictedLineup.Api.Services;
 
 public interface ISpotifyPlaylistService
 {
+    /// <summary>
+    /// Create a private playlist in the user's account containing every selected track, headliners first
+    /// </summary>
     Task<PlaylistCreationResponse> CreatePlaylistAsync(
-        string userId,
+        string accessToken,
         string playlistName,
         List<ArtistTrackResult> artistResults,
-        string accessToken);
+        CancellationToken cancel = default);
 }
 
 public class SpotifyPlaylistService : ISpotifyPlaylistService
 {
+    private readonly ISpotifyClientFactory _clientFactory;
     private readonly ILogger<SpotifyPlaylistService> _logger;
-    private const int MaxRetries = 3;
-    private const int BatchSize = 100;
-    private const int DelayBetweenBatchesMs = 500;
+    private const int BatchSize = 100; // Spotify's limit for adding items to a playlist
+    private static readonly TimeSpan DelayBetweenBatches = TimeSpan.FromMilliseconds(500);
 
-    public SpotifyPlaylistService(ILogger<SpotifyPlaylistService> logger)
+    public SpotifyPlaylistService(ISpotifyClientFactory clientFactory, ILogger<SpotifyPlaylistService> logger)
     {
+        _clientFactory = clientFactory;
         _logger = logger;
     }
 
     public async Task<PlaylistCreationResponse> CreatePlaylistAsync(
-        string userId,
+        string accessToken,
         string playlistName,
         List<ArtistTrackResult> artistResults,
-        string accessToken)
+        CancellationToken cancel = default)
     {
-        var spotify = new SpotifyClient(accessToken);
+        var spotify = _clientFactory.Create(accessToken);
+        var user = await spotify.UserProfile.Current(cancel);
 
-        // Extract all track URIs from artist results
-        var trackUris = ExtractTrackUris(artistResults);
+        var trackUris = artistResults
+            .SelectMany(a => a.TopTracks.Concat(a.RecentTracks))
+            .Select(t => $"spotify:track:{t.SpotifyTrackId}")
+            .Distinct()
+            .ToList();
 
-        _logger.LogInformation(
-            "Creating playlist '{Name}' with {Count} tracks for user {UserId}",
-            playlistName, trackUris.Count, userId);
-
-        // Step 1: Create empty playlist (private by default)
-        var createRequest = new PlaylistCreateRequest(playlistName)
+        var playlist = await spotify.Playlists.Create(user.Id, new PlaylistCreateRequest(playlistName)
         {
             Public = false,
             Description = "Created by Conflicted Lineup"
-        };
+        }, cancel);
 
-        var playlist = await ExecuteWithRetryAsync(async () =>
-            await spotify.Playlists.Create(userId, createRequest));
-
-        if (playlist == null || playlist.Id == null)
+        if (playlist.Id == null)
         {
-            throw new InvalidOperationException("Failed to create Spotify playlist");
+            throw new InvalidOperationException("Spotify did not return an ID for the new playlist");
         }
 
-        _logger.LogInformation("Created playlist {PlaylistId}", playlist.Id);
+        var batches = trackUris.Chunk(BatchSize).ToList();
+        for (var i = 0; i < batches.Count; i++)
+        {
+            if (i > 0) await Task.Delay(DelayBetweenBatches, cancel);
+            await spotify.Playlists.AddItems(playlist.Id, new PlaylistAddItemsRequest(batches[i]), cancel);
+        }
 
-        // Step 2: Add tracks in batches of 100
-        await AddTracksInBatchesAsync(spotify, playlist.Id, trackUris);
-
-        // Get playlist URL from ExternalUrls
-        var playlistUrl = playlist.ExternalUrls?.TryGetValue("spotify", out var url) == true
-            ? url
-            : $"https://open.spotify.com/playlist/{playlist.Id}";
+        _logger.LogInformation("Created playlist {PlaylistId} with {Count} tracks", playlist.Id, trackUris.Count);
 
         return new PlaylistCreationResponse(
             PlaylistId: playlist.Id,
-            PlaylistUrl: playlistUrl,
+            PlaylistUrl: playlist.ExternalUrls?.GetValueOrDefault("spotify") ?? $"https://open.spotify.com/playlist/{playlist.Id}",
             PlaylistName: playlist.Name ?? playlistName,
             TrackCount: trackUris.Count,
             ArtistCount: artistResults.Count
         );
-    }
-
-    private List<string> ExtractTrackUris(List<ArtistTrackResult> artistResults)
-    {
-        var uris = new List<string>();
-
-        foreach (var artist in artistResults)
-        {
-            // Add all tracks from each category
-            uris.AddRange(artist.FamiliarTracks.Select(t => $"spotify:track:{t.SpotifyTrackId}"));
-            uris.AddRange(artist.TopTracks.Select(t => $"spotify:track:{t.SpotifyTrackId}"));
-            uris.AddRange(artist.RecentTracks.Select(t => $"spotify:track:{t.SpotifyTrackId}"));
-        }
-
-        return uris;
-    }
-
-    private async Task AddTracksInBatchesAsync(ISpotifyClient spotify, string playlistId, List<string> trackUris)
-    {
-        for (int i = 0; i < trackUris.Count; i += BatchSize)
-        {
-            var batch = trackUris.Skip(i).Take(BatchSize).ToList();
-            var addRequest = new PlaylistAddItemsRequest(batch);
-
-            _logger.LogDebug(
-                "Adding batch {BatchNum}: {Count} tracks to playlist {PlaylistId}",
-                (i / BatchSize) + 1, batch.Count, playlistId);
-
-            await ExecuteWithRetryAsync(async () =>
-                await spotify.Playlists.AddItems(playlistId, addRequest));
-
-            // Small delay between batches to prevent rate limiting
-            if (i + BatchSize < trackUris.Count)
-            {
-                await Task.Delay(DelayBetweenBatchesMs);
-            }
-        }
-
-        _logger.LogInformation("Added {Total} tracks to playlist {PlaylistId}", trackUris.Count, playlistId);
-    }
-
-    private async Task<T?> ExecuteWithRetryAsync<T>(Func<Task<T>> apiCall) where T : class
-    {
-        for (int attempt = 0; attempt < MaxRetries; attempt++)
-        {
-            try
-            {
-                return await apiCall();
-            }
-            catch (APIException ex) when (ex.Response?.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                if (attempt == MaxRetries - 1)
-                {
-                    _logger.LogError("Max retries ({MaxRetries}) exceeded for Spotify API call", MaxRetries);
-                    throw;
-                }
-
-                var retryAfterSeconds = 5;
-                if (ex.Response?.Headers?.TryGetValue("Retry-After", out var retryAfterHeader) == true)
-                {
-                    if (int.TryParse(retryAfterHeader, out var parsed))
-                    {
-                        retryAfterSeconds = parsed;
-                    }
-                }
-
-                _logger.LogWarning(
-                    "Rate limited by Spotify API. Waiting {Seconds}s before retry (attempt {Attempt}/{MaxRetries})",
-                    retryAfterSeconds, attempt + 1, MaxRetries);
-
-                await Task.Delay(TimeSpan.FromSeconds(retryAfterSeconds));
-            }
-        }
-
-        return default;
     }
 }

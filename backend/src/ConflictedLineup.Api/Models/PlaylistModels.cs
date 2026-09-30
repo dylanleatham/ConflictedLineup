@@ -15,7 +15,7 @@ public record PlaylistCreationRequest(
 /// </summary>
 public record PlaylistCreationResponse(
     string PlaylistId,
-    string PlaylistUrl,
+    string? PlaylistUrl, // null in demo mode, where no playlist is created
     string PlaylistName,
     int TrackCount,
     int ArtistCount

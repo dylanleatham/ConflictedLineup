@@ -23,34 +23,8 @@ public record ArtistTrackResult(
     string ArtistName,
     string SpotifyArtistId,
     int Popularity,
-    List<TrackInfo> FamiliarTracks,
     List<TrackInfo> TopTracks,
     List<TrackInfo> RecentTracks
-);
-
-/// <summary>
-/// Artist with popularity score for sorting
-/// </summary>
-public record ArtistWithPopularity(
-    string ArtistId,
-    string ArtistName,
-    int Popularity,
-    string OriginalSearchName
-);
-
-/// <summary>
-/// Track candidate for playlist building
-/// </summary>
-public record TrackCandidate(
-    string TrackUri,
-    string TrackId,
-    string TrackName,
-    string ArtistId,
-    string ArtistName,
-    string? AlbumName,
-    int DurationMs,
-    string? PreviewUrl,
-    int Priority
 );
 
 /// <summary>
@@ -61,8 +35,7 @@ public record TrackInfo(
     string Name,
     string ArtistName,
     string? AlbumName,
-    int DurationMs,
-    string? PreviewUrl
+    int DurationMs
 );
 
 /// <summary>
@@ -74,12 +47,11 @@ public record SkippedArtist(
 );
 
 /// <summary>
-/// Progress update for streaming progress
+/// Progress update streamed to the client while tracks are selected
 /// </summary>
 public record ArtistProgressUpdate(
     int Current,
     int Total,
     string ArtistName,
-    string Phase,
-    ArtistTrackResult? Result = null
+    string Phase
 );

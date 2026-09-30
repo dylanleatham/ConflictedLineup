@@ -1,268 +1,120 @@
-using Anthropic.SDK;
-using Anthropic.SDK.Messaging;
-using Anthropic.SDK.Common;
+using Anthropic;
+using Anthropic.Models.Beta.Messages;
 using ConflictedLineup.Api.Models;
-using System.Text.Json;
 
 namespace ConflictedLineup.Api.Services;
 
 public interface IClaudeService
 {
-    Task<ArtistExtractionResult> ExtractArtistsFromPosterAsync(string imageBase64, string mediaType);
-    Task<FestivalSearchResult> SearchFestivalLineupAsync(string festivalName, int? year);
+    Task<ArtistExtractionResult> ExtractArtistsFromPosterAsync(string imageBase64, string mediaType, CancellationToken cancel = default);
+    Task<FestivalSearchResult> SearchFestivalLineupAsync(string festivalName, int? year, CancellationToken cancel = default);
 }
 
+/// <summary>
+/// Finds a festival's lineup with Claude: from a poster image (vision), from a festival name (web search),
+/// or both, where the poster identifies the festival and the web supplies the full, correctly spelled lineup.
+/// </summary>
 public class ClaudeService : IClaudeService
 {
+    private const string Model = "claude-opus-5-5";
+    private const int MaxTokens = 16000;
+    private const int MaxWebSearches = 5;
+
+    private static readonly Lazy<string> ExtractionPrompt = new(() =>
+        File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Prompts", "extract-lineup.txt")));
+
     private readonly AnthropicClient _client;
     private readonly ILogger<ClaudeService> _logger;
-    private const string Model = "claude-sonnet-4-20250514";
-    private const int MaxTokens = 4096;
-
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-    };
 
     public ClaudeService(IConfiguration configuration, ILogger<ClaudeService> logger)
+        : this(new AnthropicClient
+        {
+            ApiKey = configuration["ANTHROPIC_API_KEY"]
+                ?? throw new InvalidOperationException("ANTHROPIC_API_KEY not configured")
+        }, logger)
     {
-        var apiKey = configuration["ANTHROPIC_API_KEY"]
-            ?? throw new InvalidOperationException("ANTHROPIC_API_KEY not configured");
+    }
 
-        _client = new AnthropicClient(apiKey);
+    internal ClaudeService(AnthropicClient client, ILogger<ClaudeService> logger)
+    {
+        _client = client;
         _logger = logger;
     }
 
-    public async Task<ArtistExtractionResult> ExtractArtistsFromPosterAsync(string imageBase64, string mediaType)
+    public async Task<ArtistExtractionResult> ExtractArtistsFromPosterAsync(string imageBase64, string mediaType, CancellationToken cancel = default)
     {
-        try
+        var lineup = await ExtractLineupAsync(
+        [
+            new BetaImageBlockParam { Source = new BetaBase64ImageSource { MediaType = mediaType, Data = imageBase64 } },
+            new BetaTextBlockParam { Text = ExtractionPrompt.Value },
+        ], cancel);
+
+        if (lineup == null)
         {
-            // Read unified prompt - handles both image analysis and web search with fallback
-            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "extract-lineup.txt");
-            var promptText = await File.ReadAllTextAsync(promptPath);
-
-            // Create vision message with image
-            var messages = new List<Message>
-            {
-                new Message
-                {
-                    Role = RoleType.User,
-                    Content = new List<ContentBase>
-                    {
-                        new ImageContent
-                        {
-                            Source = new ImageSource
-                            {
-                                MediaType = mediaType,
-                                Data = imageBase64
-                            }
-                        },
-                        new TextContent { Text = promptText }
-                    }
-                }
-            };
-
-            var parameters = new MessageParameters
-            {
-                Messages = messages,
-                Model = Model,
-                MaxTokens = MaxTokens,
-                Stream = false,
-                Tools = new List<Anthropic.SDK.Common.Tool>
-                {
-                    ServerTools.GetWebSearchTool(maxUses: 5)
-                },
-                ToolChoice = new ToolChoice { Type = ToolChoiceType.Auto }
-            };
-
-            var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-
-            // With web search, response may have multiple text blocks - combine them all
-            var allTextContent = response.Content
-                .OfType<TextContent>()
-                .Select(tc => tc.Text)
-                .ToList();
-
-            _logger.LogInformation("Claude response has {Count} text blocks", allTextContent.Count);
-
-            // Join all text and find JSON
-            var combinedText = string.Join("\n", allTextContent);
-            _logger.LogDebug("Combined response text: {Text}", combinedText);
-
-            var responseText = ExtractJson(combinedText);
-
-            if (string.IsNullOrWhiteSpace(responseText) || !responseText.StartsWith("{"))
-            {
-                _logger.LogError("Could not extract JSON from response. Raw text: {Text}", combinedText);
-                return new ArtistExtractionResult(
-                    Artists: new List<ArtistInfo>(),
-                    Warning: "Failed to parse Claude response - no JSON found"
-                );
-            }
-
-            // Parse Claude's response format
-            var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);
-
-            if (rawResult == null)
-            {
-                return new ArtistExtractionResult(
-                    Artists: new List<ArtistInfo>(),
-                    Warning: "Failed to parse Claude response"
-                );
-            }
-
-            // Map to ArtistExtractionResult
-            var artists = rawResult.Artists
-                .Select(name => new ArtistInfo(name, "high"))
-                .ToList();
-
-            return new ArtistExtractionResult(
-                Artists: artists,
-                FestivalName: rawResult.Festival,
-                Source: rawResult.Source,
-                SourceUrl: rawResult.SourceUrl
-            );
+            return new ArtistExtractionResult([], Warning: "Couldn't read a lineup from that poster");
         }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Failed to parse Claude response as JSON");
-            return new ArtistExtractionResult(
-                Artists: new List<ArtistInfo>(),
-                Warning: "Failed to parse artist list from response"
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error extracting artists from poster");
-            throw;
-        }
+
+        return new ArtistExtractionResult(
+            Artists: lineup.Artists.Select(name => new ArtistInfo(name)).ToList(),
+            FestivalName: lineup.Festival,
+            Source: lineup.Source,
+            SourceUrl: lineup.SourceUrl);
     }
 
-    public async Task<FestivalSearchResult> SearchFestivalLineupAsync(string festivalName, int? year)
+    public async Task<FestivalSearchResult> SearchFestivalLineupAsync(string festivalName, int? year, CancellationToken cancel = default)
     {
-        try
-        {
-            // Read the same prompt used for poster extraction
-            var promptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", "extract-lineup.txt");
-            var promptText = await File.ReadAllTextAsync(promptPath);
+        var searchYear = year ?? DateTime.UtcNow.Year;
 
-            // Prepend context so Claude skips Step 1 (no image provided)
-            var yearText = year?.ToString() ?? DateTime.Now.Year.ToString();
-            var prompt = $"The user is looking for the lineup for {festivalName} {yearText}. No image provided - skip Step 1 and proceed directly to Step 2 (web search).\n\n{promptText}";
-
-            var messages = new List<Message>
+        // Same prompt as the poster path, told there is no image so it goes straight to searching
+        var lineup = await ExtractLineupAsync(
+        [
+            new BetaTextBlockParam
             {
-                new Message
-                {
-                    Role = RoleType.User,
-                    Content = new List<ContentBase>
-                    {
-                        new TextContent { Text = prompt }
-                    }
-                }
-            };
+                Text = $"The user is looking for the lineup for {festivalName} {searchYear}. " +
+                       $"No image provided - skip Step 1 and proceed directly to Step 2 (web search).\n\n{ExtractionPrompt.Value}"
+            },
+        ], cancel) ?? throw new InvalidOperationException("Claude's reply contained no lineup");
 
-            var parameters = new MessageParameters
-            {
-                Messages = messages,
-                Model = Model,
-                MaxTokens = MaxTokens,
-                Stream = false,
-                Tools = new List<Anthropic.SDK.Common.Tool>
-                {
-                    ServerTools.GetWebSearchTool(maxUses: 5)
-                },
-                ToolChoice = new ToolChoice { Type = ToolChoiceType.Auto }
-            };
-
-            var response = await _client.Messages.GetClaudeMessageAsync(parameters);
-
-            // With web search, response may have multiple text blocks - combine them all
-            var allTextContent = response.Content
-                .OfType<TextContent>()
-                .Select(tc => tc.Text)
-                .ToList();
-
-            _logger.LogInformation("Claude response has {Count} text blocks", allTextContent.Count);
-
-            // Join all text and find JSON
-            var combinedText = string.Join("\n", allTextContent);
-            _logger.LogDebug("Combined response text: {Text}", combinedText);
-
-            var responseText = ExtractJson(combinedText);
-
-            if (string.IsNullOrWhiteSpace(responseText) || !responseText.StartsWith("{"))
-            {
-                _logger.LogError("Could not extract JSON from response. Raw text: {Text}", combinedText);
-                throw new InvalidOperationException("No valid JSON found in Claude response");
-            }
-
-            // Parse Claude's response format
-            var rawResult = JsonSerializer.Deserialize<LineupExtractionResponse>(responseText, JsonOptions);
-
-            if (rawResult == null)
-            {
-                throw new InvalidOperationException("Failed to parse festival search response");
-            }
-
-            // Map to FestivalSearchResult
-            var artists = rawResult.Artists
-                .Select(name => new ArtistInfo(name, "high"))
-                .ToList();
-
-            var sources = rawResult.SourceUrl != null
-                ? new List<string> { rawResult.SourceUrl }
-                : new List<string>();
-
-            // Parse year from festival name or use provided year
-            var resultYear = year ?? DateTime.Now.Year;
-
-            return new FestivalSearchResult(
-                FestivalName: rawResult.Festival,
-                Year: resultYear,
-                Artists: artists,
-                Sources: sources
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error searching festival lineup for {FestivalName}", festivalName);
-            throw;
-        }
+        return new FestivalSearchResult(
+            FestivalName: lineup.Festival ?? $"{festivalName} {searchYear}",
+            Year: searchYear,
+            Artists: lineup.Artists.Select(name => new ArtistInfo(name)).ToList(),
+            Sources: lineup.SourceUrl is { } url ? [url] : []);
     }
 
-    /// <summary>
-    /// Extract JSON object from response text, handling potential markdown code blocks
-    /// </summary>
-    private static string ExtractJson(string text)
+    private async Task<LineupExtractionResponse?> ExtractLineupAsync(List<BetaContentBlockParam> content, CancellationToken cancel)
     {
-        text = text.Trim();
-
-        // Handle markdown code blocks
-        if (text.StartsWith("```json"))
+        var response = await _client.Beta.Messages.Create(new MessageCreateParams
         {
-            text = text[7..];
-        }
-        else if (text.StartsWith("```"))
-        {
-            text = text[3..];
-        }
+            Model = Model,
+            MaxTokens = MaxTokens,
+            OutputConfig = new BetaOutputConfig { Effort = Effort.Medium },
+            // If a safety classifier declines, the API re-runs the request on its default fallback model
+            Betas = ["server-side-fallback-2026-07-01"],
+            Fallbacks = new Default(),
+            Tools = [new BetaToolUnion(new BetaWebSearchTool20260209 { MaxUses = MaxWebSearches })],
+            Messages = [new BetaMessageParam { Role = Role.User, Content = content }],
+        }, cancel);
 
-        if (text.EndsWith("```"))
+        if (response.StopReason == "refusal")
         {
-            text = text[..^3];
-        }
-
-        // Find the JSON object
-        var startIndex = text.IndexOf('{');
-        var endIndex = text.LastIndexOf('}');
-
-        if (startIndex >= 0 && endIndex > startIndex)
-        {
-            text = text[startIndex..(endIndex + 1)];
+            _logger.LogWarning("Claude declined the lineup request: {Category}", response.StopDetails?.Category);
+            return null;
         }
 
-        return text.Trim();
+        var textBlocks = response.Content
+            .Select(b => b.Value)
+            .OfType<BetaTextBlock>()
+            .Select(t => t.Text)
+            .ToList();
+
+        var lineup = LineupResponseParser.Parse(textBlocks);
+        if (lineup == null)
+        {
+            _logger.LogError("No lineup JSON in Claude's reply (stop reason {StopReason}): {Text}",
+                response.StopReason, string.Join("\n", textBlocks));
+        }
+
+        return lineup;
     }
 }

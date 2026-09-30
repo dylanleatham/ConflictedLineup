@@ -4,12 +4,17 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Anthropic.SDK" Version="5.9.0" />
+    <PackageReference Include="Anthropic" Version="12.51.0" />
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ConflictedLineup.Api.Tests" />
   </ItemGroup>
 
   <ItemGroup>

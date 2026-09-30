@@ -8,9 +8,11 @@ namespace ConflictedLineup.Api.Controllers;
 [Route("api/extraction")]
 public class ExtractionController : ControllerBase
 {
+    private const int MaxBase64Length = 7_000_000; // ~5MB raw image
+    private static readonly string[] ValidMediaTypes = ["image/jpeg", "image/png", "image/webp"];
+
     private readonly IClaudeService _claudeService;
     private readonly ILogger<ExtractionController> _logger;
-    private const int MaxBase64Length = 7_000_000; // ~5MB raw image
 
     public ExtractionController(IClaudeService claudeService, ILogger<ExtractionController> logger)
     {
@@ -19,10 +21,8 @@ public class ExtractionController : ControllerBase
     }
 
     [HttpPost("poster")]
-    public async Task<ActionResult<ArtistExtractionResult>> ExtractFromPoster(
-        [FromBody] PosterExtractionRequest request)
+    public async Task<ActionResult<ArtistExtractionResult>> ExtractFromPoster([FromBody] PosterExtractionRequest request)
     {
-        // Validate image size
         if (string.IsNullOrEmpty(request.ImageBase64))
         {
             return BadRequest(new { error = "Image data is required" });
@@ -33,23 +33,16 @@ public class ExtractionController : ControllerBase
             return BadRequest(new { error = "Image size exceeds 5MB limit" });
         }
 
-        // Validate media type
-        var validMediaTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-        if (!validMediaTypes.Contains(request.MediaType))
+        if (!ValidMediaTypes.Contains(request.MediaType))
         {
             return BadRequest(new { error = "Media type must be image/jpeg, image/png, or image/webp" });
         }
 
         try
         {
-            var result = await _claudeService.ExtractArtistsFromPosterAsync(
-                request.ImageBase64,
-                request.MediaType
-            );
-
-            return Ok(result);
+            return Ok(await _claudeService.ExtractArtistsFromPosterAsync(request.ImageBase64, request.MediaType, HttpContext.RequestAborted));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error extracting artists from poster");
             return StatusCode(500, new { error = "Failed to extract artists from poster" });
@@ -57,10 +50,8 @@ public class ExtractionController : ControllerBase
     }
 
     [HttpPost("festival")]
-    public async Task<ActionResult<FestivalSearchResult>> SearchFestival(
-        [FromBody] FestivalSearchRequest request)
+    public async Task<ActionResult<FestivalSearchResult>> SearchFestival([FromBody] FestivalSearchRequest request)
     {
-        // Validate festival name
         if (string.IsNullOrWhiteSpace(request.FestivalName))
         {
             return BadRequest(new { error = "Festival name is required" });
@@ -68,17 +59,12 @@ public class ExtractionController : ControllerBase
 
         try
         {
-            var result = await _claudeService.SearchFestivalLineupAsync(
-                request.FestivalName,
-                request.Year
-            );
-
-            return Ok(result);
+            return Ok(await _claudeService.SearchFestivalLineupAsync(request.FestivalName.Trim(), request.Year, HttpContext.RequestAborted));
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(ex, "Error searching festival lineup for {FestivalName}", request.FestivalName);
-            return StatusCode(500, new { error = "Failed to search festival lineup" });
+            return StatusCode(500, new { error = "Couldn't find that lineup. Try a poster instead." });
         }
     }
 }

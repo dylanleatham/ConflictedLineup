@@ -1,3 +1,4 @@
+using ConflictedLineup.Api.Demo;
 using ConflictedLineup.Api.Services;
 using DotNetEnv;
 
@@ -6,61 +7,50 @@ Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add CORS for frontend development and production
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins(
-                  "http://localhost:5173",
-                  "http://localhost:5175",
-                  "http://127.0.0.1:5173",
-                  "http://127.0.0.1:5175",
-                  "https://conflictedlineup.com",
-                  "https://www.conflictedlineup.com",
-                  "https://knucklehead.dev"
-              )
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
-
-// Add controllers
 builder.Services.AddControllers();
 
-// Register services
-builder.Services.AddScoped<IClaudeService, ClaudeService>();
+// Demo mode serves a fictional festival from fixtures, so the whole flow runs without
+// an Anthropic key or a Spotify account
+var demoMode = builder.Configuration.GetValue<bool>("DEMO_MODE");
 
-// Register Spotify services
-builder.Services.AddScoped<ISpotifySearchService, SpotifySearchService>();
-builder.Services.AddScoped<ISpotifyTopTracksService, SpotifyTopTracksService>();
-builder.Services.AddScoped<ISpotifyRecentReleasesService, SpotifyRecentReleasesService>();
-builder.Services.AddScoped<ISpotifyUserLibraryService, SpotifyUserLibraryService>();
-builder.Services.AddScoped<ISpotifyTrackService, SpotifyTrackService>();
-builder.Services.AddScoped<ISpotifyPlaylistService, SpotifyPlaylistService>();
+if (demoMode)
+{
+    builder.Services.AddSingleton<IClaudeService, DemoClaudeService>();
+    builder.Services.AddSingleton<ISpotifyTrackService, DemoSpotifyTrackService>();
+    builder.Services.AddSingleton<ISpotifyPlaylistService, DemoSpotifyPlaylistService>();
+}
+else
+{
+    builder.Services.AddSingleton<IClaudeService, ClaudeService>();
+    builder.Services.AddSingleton<ISpotifyClientFactory, SpotifyClientFactory>();
+    builder.Services.AddSingleton<ISpotifySearchService, SpotifySearchService>();
+    builder.Services.AddSingleton<ISpotifyTopTracksService, SpotifyTopTracksService>();
+    builder.Services.AddSingleton<ISpotifyRecentReleasesService, SpotifyRecentReleasesService>();
+    builder.Services.AddSingleton<ISpotifyTrackService, SpotifyTrackService>();
+    builder.Services.AddSingleton<ISpotifyPlaylistService, SpotifyPlaylistService>();
+}
 
 var app = builder.Build();
 
-app.UsePathBase("/conflicted");
-app.UseRouting();
-app.UseCors();
+if (demoMode)
+{
+    app.Logger.LogWarning("DEMO_MODE is on: serving fixture data, not calling Claude or Spotify");
+}
+
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// Health check at root for platform probes (probes hit /healthz directly;
-// UsePathBase is a no-op when the path doesn't start with /conflicted)
-app.MapMethods("/healthz", new[] { "GET", "HEAD" }, () =>
-{
-    return Results.Ok(new
-    {
-        status = "Healthy",
-        timestamp = DateTime.UtcNow.ToString("o")
-    });
-});
+app.MapMethods("/healthz", ["GET", "HEAD"], () => Results.Ok(new { status = "Healthy" }));
 
-// Map controllers
+// Read by the SPA at startup, before it decides whether to show the Spotify login
+app.MapGet("/api/config", () => new { demoMode });
+
 app.MapControllers();
 
 // SPA fallback for client-side routes
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+// Exposes the entry point to WebApplicationFactory in the integration tests
+public partial class Program;
