@@ -178,7 +178,9 @@ public class SpotifyTrackService : ISpotifyTrackService
 
             foreach (var album in response.Albums.Where(a => a?.Tracks?.Items != null))
             {
-                var artistId = albumOwner[album.Id];
+                // Spotify can relink an album to a different ID than the one requested; skip what we can't place
+                if (!albumOwner.TryGetValue(album.Id, out var artistId)) continue;
+
                 var tracks = tracksByArtist.TryGetValue(artistId, out var existing)
                     ? existing
                     : tracksByArtist[artistId] = [];
