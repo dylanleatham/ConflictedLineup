@@ -1,0 +1,19 @@
+# One container: the ASP.NET API serving the built React app on http://localhost:8080
+#
+#   docker compose up --build                    # demo mode: fictional festival, no keys needed
+#
+# For the real thing, put ANTHROPIC_API_KEY and VITE_SPOTIFY_CLIENT_ID in .env (see backend/.env.example),
+# add http://127.0.0.1:8080/callback as a redirect URI on your Spotify app, then:
+#
+#   DEMO_MODE=false docker compose up --build
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_SPOTIFY_CLIENT_ID: ${VITE_SPOTIFY_CLIENT_ID:-}
+    ports:
+      - "8080:8080"
+    environment:
+      DEMO_MODE: ${DEMO_MODE:-true}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

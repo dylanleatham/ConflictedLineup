@@ -1,13 +1,17 @@
 # Start both backend and frontend for local development.
-# Usage: .\dev.ps1
+# Usage: .\dev.ps1         (real Claude + Spotify; needs backend/.env and frontend/.env.local)
+#        .\dev.ps1 -Demo   (fictional festival, no keys needed)
 #   Backend: http://localhost:8080
 #   Frontend: http://localhost:5175 (proxies /api to backend)
 
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+param([switch]$Demo)
 
-Write-Host "Starting backend on http://localhost:8080..." -ForegroundColor Cyan
+$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$LaunchProfile = if ($Demo) { "demo" } else { "http" }
+
+Write-Host "Starting backend ($LaunchProfile) on http://localhost:8080..." -ForegroundColor Cyan
 $backend = Start-Process -NoNewWindow -PassThru -FilePath "dotnet" `
-    -ArgumentList "run" `
+    -ArgumentList "run", "--launch-profile", $LaunchProfile `
     -WorkingDirectory "$Root\backend\src\ConflictedLineup.Api"
 
 Write-Host "Starting frontend on http://localhost:5175..." -ForegroundColor Cyan
