@@ -1,6 +1,10 @@
-# Environment variables
-.env.local
+# Environment variables: every .env variant except the committed examples
 .env
+.env.*
+!.env.example
+
+# Claude Code local settings (records approved shell commands)
+.claude/settings.local.json
 
 # Node modules
 node_modules/
@@ -11,6 +15,8 @@ dist/
 # .NET build output
 bin/
 obj/
+testpublish/
+TestResults/
 
 # Visual Studio
 .vs/

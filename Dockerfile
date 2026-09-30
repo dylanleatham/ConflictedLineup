@@ -4,7 +4,9 @@ WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
-ENV VITE_SPOTIFY_CLIENT_ID=c24c01e307fc439e9148244da86142be
+# Spotify client IDs are public (PKCE flow, no secret) but vary per deployment
+ARG VITE_SPOTIFY_CLIENT_ID=
+ENV VITE_SPOTIFY_CLIENT_ID=$VITE_SPOTIFY_CLIENT_ID
 RUN npm run build
 
 # Stage 2: Build ASP.NET Core backend
