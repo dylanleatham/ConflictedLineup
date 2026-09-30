@@ -134,15 +134,7 @@
   color: var(--blood-red);
 }
 
-.artist-chips .uncertain-chip {
-  background: rgba(255, 106, 0, 0.15);
-  border-color: var(--blaze-orange);
-  color: var(--blaze-orange);
-}
 
-.artist-chips .uncertain-chip:hover {
-  background: rgba(255, 106, 0, 0.25);
-}
 
 /* Inline edit */
 .chip-edit-container {

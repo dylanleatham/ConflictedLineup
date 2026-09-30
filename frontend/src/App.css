@@ -37,6 +37,18 @@
 .header-right {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.demo-badge {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--blaze-orange);
+  border: 1px solid var(--blaze-orange-muted);
+  border-radius: 999px;
+  padding: 2px 10px;
 }
 
 /* User Profile Styles */

@@ -15,7 +15,8 @@ export interface PlaylistCreationRequest {
  */
 export interface PlaylistCreationResponse {
   playlistId: string;
-  playlistUrl: string;
+  /** Null in demo mode, where no playlist is created */
+  playlistUrl: string | null;
   playlistName: string;
   trackCount: number;
   artistCount: number;

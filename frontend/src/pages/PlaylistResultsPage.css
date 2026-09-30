@@ -262,3 +262,9 @@
     background-color: rgba(0, 245, 255, 0.15) !important;
   }
 }
+
+.demo-notice {
+  color: var(--text-secondary);
+  max-width: 420px;
+  margin: 8px auto 0;
+}

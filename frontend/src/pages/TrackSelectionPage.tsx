@@ -4,18 +4,14 @@ import { Alert, CircularProgress, Collapse, IconButton, LinearProgress } from '@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { useAuth } from '../auth';
+import { useAppConfig } from '../AppConfigContext';
 import { selectTracksStreaming } from '../services/trackSelectionApi';
 import { createPlaylist } from '../services/playlistApi';
 import { PlaylistResultsState } from '../types/playlist';
 import { TrackSelectionResponse, ArtistTrackResult, SkippedArtist } from '../types/trackSelection';
 import { ArtistInfo } from '../types/extraction';
+import { artistTracks, festivalTitle, formatDuration, totalTracks } from '../utils/tracks';
 import './TrackSelectionPage.css';
-
-function formatDuration(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000);
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
 
 
 interface ArtistResultCardProps {
@@ -23,33 +19,30 @@ interface ArtistResultCardProps {
 }
 
 function ArtistResultCard({ result }: ArtistResultCardProps) {
-  const familiarIds = new Set(result.familiarTracks.map(t => t.spotifyTrackId));
-  const allTracks = [
-    ...result.familiarTracks,
-    ...result.topTracks,
-    ...result.recentTracks,
-  ];
+  const { demoMode } = useAppConfig();
+  const allTracks = artistTracks(result);
 
   return (
     <div className="artist-result-card">
       <div className="artist-result-header">
-        <a
-          href={`https://open.spotify.com/artist/${result.spotifyArtistId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="artist-name-link"
-        >
-          {result.artistName}
-        </a>
+        {demoMode ? (
+          <span className="artist-name-link">{result.artistName}</span>
+        ) : (
+          <a
+            href={`https://open.spotify.com/artist/${result.spotifyArtistId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="artist-name-link"
+          >
+            {result.artistName}
+          </a>
+        )}
         <span className="artist-track-total">{allTracks.length} tracks</span>
       </div>
       <ul className="track-list">
         {allTracks.map((track) => (
-          <li key={track.spotifyTrackId} className={`track-item${familiarIds.has(track.spotifyTrackId) ? ' track-familiar' : ''}`}>
-            <span className="track-name">
-              {familiarIds.has(track.spotifyTrackId) && <span className="familiar-badge">In Library</span>}
-              {track.name}
-            </span>
+          <li key={track.spotifyTrackId} className="track-item">
+            <span className="track-name">{track.name}</span>
             <span className="track-duration">{formatDuration(track.durationMs)}</span>
           </li>
         ))}
@@ -182,10 +175,9 @@ export function TrackSelectionPage() {
     setError(null);
 
     try {
-      // Don't pass year separately if it's already in the festival name
       const playlist = await createPlaylist(
         festivalName || 'My Festival Playlist',
-        festivalNameIncludesYear ? undefined : year,
+        year,
         result.artists,
         token
       );
@@ -210,23 +202,8 @@ export function TrackSelectionPage() {
     doFetch();
   };
 
-  // Calculate total tracks for summary
-  const totalTracks = result
-    ? result.artists.reduce(
-        (sum, artist) =>
-          sum +
-          artist.familiarTracks.length +
-          artist.topTracks.length +
-          artist.recentTracks.length,
-        0
-      )
-    : 0;
-
-  // Check if festival name already contains the year to avoid duplication
-  const festivalNameIncludesYear = festivalName && year && festivalName.includes(String(year));
-  const displayTitle = festivalName
-    ? (festivalNameIncludesYear ? festivalName : `${festivalName}${year ? ` ${year}` : ''}`)
-    : 'Track Selection Complete';
+  const trackCount = result ? totalTracks(result.artists) : 0;
+  const displayTitle = festivalTitle(festivalName, year) ?? 'Track Selection Complete';
 
   return (
     <div className="track-selection-page">
@@ -292,7 +269,7 @@ export function TrackSelectionPage() {
           <div className="results-summary">
             <h1>{displayTitle}</h1>
             <p>
-              Found <strong>{totalTracks} tracks</strong> from{' '}
+              Found <strong>{trackCount} tracks</strong> from{' '}
               <strong>{result.artists.length} artists</strong>
             </p>
           </div>
@@ -312,7 +289,7 @@ export function TrackSelectionPage() {
             <button
               className="create-playlist-button"
               onClick={handleCreatePlaylist}
-              disabled={totalTracks === 0 || creatingPlaylist}
+              disabled={trackCount === 0 || creatingPlaylist}
             >
               {creatingPlaylist ? (
                 <>

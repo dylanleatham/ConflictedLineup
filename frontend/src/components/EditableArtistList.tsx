@@ -1,5 +1,4 @@
 import { TextField, Chip, Box, Typography } from '@mui/material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import AddIcon from '@mui/icons-material/Add';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -26,7 +25,7 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
   const handleAddArtist = () => {
     const trimmed = newArtist.trim();
     if (trimmed && !artists.some(a => a.name.toLowerCase() === trimmed.toLowerCase())) {
-      const updated = [...artists, { name: trimmed, confidence: 'high' as const }];
+      const updated = [...artists, { name: trimmed }];
       setArtists(updated);
       onChange(updated);
       setNewArtist('');
@@ -76,7 +75,7 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
       }
       const updated = artists.map((artist, i) =>
         i === editingIndex
-          ? { ...artist, name: trimmed, confidence: 'high' as const }
+          ? { ...artist, name: trimmed }
           : artist
       );
       setArtists(updated);
@@ -151,20 +150,9 @@ export function EditableArtistList({ initialArtists, onChange, disabled = false 
             ) : (
               <Chip
                 key={`${artist.name}-${index}`}
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {artist.name}
-                    {artist.confidence === 'uncertain' && (
-                      <HelpOutlineIcon
-                        sx={{ fontSize: 18, color: '#ff9800' }}
-                        titleAccess="Uncertain extraction - verify spelling"
-                      />
-                    )}
-                  </Box>
-                }
+                label={artist.name}
                 onClick={() => startEditing(index)}
                 onDelete={disabled ? undefined : () => handleDelete(index)}
-                className={artist.confidence === 'uncertain' ? 'uncertain-chip' : ''}
               />
             )
           ))}

@@ -1,6 +1,5 @@
 export interface ArtistInfo {
   name: string;
-  confidence: 'high' | 'uncertain';
 }
 
 export interface ArtistExtractionResult {

@@ -1,20 +1,18 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Button, List, ListItem, ListItemText, Divider, Box } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { PlaylistResultsState } from '../types/playlist';
 import { ArtistTrackResult, SkippedArtist } from '../types/trackSelection';
+import { totalTracks } from '../utils/tracks';
 import './PlaylistResultsPage.css';
 
 function ArtistIncludedList({ artists }: { artists: ArtistTrackResult[] }) {
   return (
     <List dense className="artist-list">
       {artists.map((artist) => {
-        const trackCount =
-          artist.familiarTracks.length +
-          artist.topTracks.length +
-          artist.recentTracks.length;
+        const trackCount = totalTracks([artist]);
         return (
           <ListItem key={artist.spotifyArtistId} className="artist-list-item">
             <CheckCircleIcon className="artist-check-icon" />
@@ -55,10 +53,9 @@ export function PlaylistResultsPage() {
 
   const state = location.state as PlaylistResultsState | undefined;
 
-  // Redirect if no state (direct navigation)
+  // Direct navigation or a reload loses the router state; start over
   if (!state) {
-    navigate('/');
-    return null;
+    return <Navigate to="/" replace />;
   }
 
   const { playlist, artists, skipped } = state;
@@ -84,17 +81,24 @@ export function PlaylistResultsPage() {
               <Typography variant="body1" className="playlist-stats">
                 {playlist.trackCount} tracks from {playlist.artistCount} artists
               </Typography>
-              <Button
-                variant="contained"
-                size="large"
-                href={playlist.playlistUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                startIcon={<OpenInNewIcon />}
-                className="open-spotify-button"
-              >
-                Open in Spotify
-              </Button>
+              {playlist.playlistUrl ? (
+                <Button
+                  variant="contained"
+                  size="large"
+                  href={playlist.playlistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<OpenInNewIcon />}
+                  className="open-spotify-button"
+                >
+                  Open in Spotify
+                </Button>
+              ) : (
+                <Typography variant="body2" className="demo-notice">
+                  Demo mode: nothing was created in Spotify. With a Spotify login this
+                  playlist would now be in your library.
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Box>

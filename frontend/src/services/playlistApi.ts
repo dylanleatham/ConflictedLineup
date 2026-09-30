@@ -1,38 +1,17 @@
 import { PlaylistCreationRequest, PlaylistCreationResponse } from '../types/playlist';
 import { ArtistTrackResult } from '../types/trackSelection';
-
-import { apiBaseUrl } from '../config';
-
-const API_URL = apiBaseUrl;
+import { postJson } from './http';
 
 /**
- * Create a Spotify playlist from track selection results
+ * Create a private Spotify playlist from track selection results. The server appends the year
+ * to the name unless the festival name already contains it.
  */
-export async function createPlaylist(
+export function createPlaylist(
   festivalName: string,
   year: number | undefined,
   artists: ArtistTrackResult[],
   spotifyAccessToken: string
 ): Promise<PlaylistCreationResponse> {
-  const request: PlaylistCreationRequest = {
-    festivalName,
-    year,
-    artists,
-    spotifyAccessToken,
-  };
-
-  const response = await fetch(`${API_URL}/api/playlist/create`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `Failed to create playlist: ${response.status}`);
-  }
-
-  return response.json();
+  const request: PlaylistCreationRequest = { festivalName, year, artists, spotifyAccessToken };
+  return postJson('/api/playlist/create', request, 'Failed to create playlist');
 }

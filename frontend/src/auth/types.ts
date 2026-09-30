@@ -1,7 +1,6 @@
 export interface SpotifyProfile {
   id: string;
   display_name: string | null;
-  email: string;
   images: { url: string; height: number; width: number }[];
 }
 

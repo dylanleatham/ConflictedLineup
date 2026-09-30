@@ -1,27 +1,30 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import './styles/tokens.css'
-import './App.css'
-import App from './App.tsx'
-import { AuthProvider } from './auth/AuthProvider'
-import { basePath, routerBasename } from './config'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import './styles/tokens.css';
+import './App.css';
+import App from './App.tsx';
+import { AuthProvider } from './auth/AuthProvider';
+import { clearStoredTokens } from './auth/SpotifyAuthConfig';
+import { AppConfigContext } from './AppConfigContext';
+import { loadAppConfig } from './config';
 
-// Clear stale tokens if session expired to prevent refresh loop
-if (window.location.search.includes('session_expired=true')) {
-  localStorage.removeItem('ROCP_token');
-  localStorage.removeItem('ROCP_refreshToken');
-  localStorage.removeItem('ROCP_idToken');
-  // Clean up URL
-  window.history.replaceState({}, '', basePath);
+// Clear stale tokens if the session expired, to prevent a refresh loop
+if (new URLSearchParams(window.location.search).has('session_expired')) {
+  clearStoredTokens();
+  window.history.replaceState({}, '', '/');
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <BrowserRouter basename={routerBasename}>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </StrictMode>,
-)
+loadAppConfig().then((config) => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <AppConfigContext.Provider value={config}>
+        <BrowserRouter>
+          <AuthProvider demoMode={config.demoMode}>
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
+      </AppConfigContext.Provider>
+    </StrictMode>,
+  );
+});

@@ -7,17 +7,15 @@ export interface TrackInfo {
   artistName: string;
   albumName?: string;
   durationMs: number;
-  previewUrl?: string;
 }
 
 /**
- * Tracks selected for one artist with familiar/top/recent categories
+ * Tracks selected for one artist: top tracks first, then recent singles
  */
 export interface ArtistTrackResult {
   artistName: string;
   spotifyArtistId: string;
   popularity: number;
-  familiarTracks: TrackInfo[];
   topTracks: TrackInfo[];
   recentTracks: TrackInfo[];
 }

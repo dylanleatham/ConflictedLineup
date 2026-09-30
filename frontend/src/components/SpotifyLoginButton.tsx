@@ -4,10 +4,11 @@ interface SpotifyLoginButtonProps {
   onClick: () => void;
   disabled?: boolean;
   isLoading?: boolean;
+  label?: string;
 }
 
-export function SpotifyLoginButton({ onClick, disabled = false, isLoading = false }: SpotifyLoginButtonProps) {
-  const buttonText = isLoading ? 'Connecting...' : 'Log in with Spotify';
+export function SpotifyLoginButton({ onClick, disabled = false, isLoading = false, label = 'Log in with Spotify' }: SpotifyLoginButtonProps) {
+  const buttonText = isLoading ? 'Connecting...' : label;
   const isDisabled = disabled || isLoading;
 
   return (

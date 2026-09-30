@@ -1,21 +1,25 @@
 import { TAuthConfig } from 'react-oauth2-code-pkce';
-import { basePath } from '../config';
+
+// The keys react-oauth2-code-pkce persists tokens under
+const TOKEN_STORAGE_KEYS = ['ROCP_token', 'ROCP_refreshToken', 'ROCP_idToken'];
+
+export function clearStoredTokens() {
+  TOKEN_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+}
 
 export const spotifyAuthConfig: TAuthConfig = {
   clientId: import.meta.env.VITE_SPOTIFY_CLIENT_ID || '',
   authorizationEndpoint: 'https://accounts.spotify.com/authorize',
   tokenEndpoint: 'https://accounts.spotify.com/api/token',
-  redirectUri: `${window.location.origin}${basePath}callback`,
-  scope: 'user-read-private user-read-email playlist-modify-public playlist-modify-private playlist-read-private playlist-read-collaborative user-library-read',
-  decodeToken: false, // CRITICAL - Spotify tokens are opaque, not JWTs
-  autoLogin: false, // Show landing page first per CONTEXT.md
-  storage: 'local', // Persist across browser sessions per CONTEXT.md
+  redirectUri: `${window.location.origin}/callback`,
+  // Only what the app uses: the profile name for the header, and creating a private playlist
+  scope: 'user-read-private playlist-modify-private',
+  decodeToken: false, // Spotify access tokens are opaque, not JWTs
+  autoLogin: false, // Show the landing page first
+  storage: 'local', // Stay signed in across browser sessions
   onRefreshTokenExpire: () => {
-    // Clear tokens from storage before redirecting to prevent refresh loop
-    localStorage.removeItem('ROCP_token');
-    localStorage.removeItem('ROCP_refreshToken');
-    localStorage.removeItem('ROCP_idToken');
-    // Redirect to login with session expired flag
-    window.location.href = `${basePath}?session_expired=true`;
-  }
+    // Clear tokens before redirecting, or the library retries the dead refresh token in a loop
+    clearStoredTokens();
+    window.location.href = '/?session_expired=true';
+  },
 };

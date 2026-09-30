@@ -1,8 +1,10 @@
 import { useAuth } from '../auth';
+import { useAppConfig } from '../AppConfigContext';
 import { SpotifyLoginButton } from './SpotifyLoginButton';
 
 export function LoginPage() {
   const { login, isLoading, error } = useAuth();
+  const { demoMode } = useAppConfig();
 
   return (
     <div className="login-page">
@@ -64,7 +66,9 @@ export function LoginPage() {
             top tracks and recent releases from every artist on the lineup.
           </p>
           <p className="why-spotify">
-            Connect with Spotify to create playlists and discover new music.
+            {demoMode
+              ? 'Demo mode: a fictional festival, no Spotify account needed.'
+              : 'Connect with Spotify to create playlists and discover new music.'}
           </p>
         </div>
 
@@ -78,6 +82,7 @@ export function LoginPage() {
           <SpotifyLoginButton
             onClick={() => login()}
             isLoading={isLoading}
+            label={demoMode ? 'Try the demo' : undefined}
           />
         </div>
       </div>

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { useAppConfig } from '../AppConfigContext';
 import { UserProfile } from './UserProfile';
 import { ProfileDropdown } from './ProfileDropdown';
 
 export function Header() {
   const navigate = useNavigate();
   const { isAuthenticated, profile, logout } = useAuth();
+  const { demoMode } = useAppConfig();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (!isAuthenticated) {
@@ -23,6 +25,7 @@ export function Header() {
       <div className="header-content">
         <h1 className="header-logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>Conflicted Lineup</h1>
         <div className="header-right">
+          {demoMode && <span className="demo-badge" title="Fictional data; Claude and Spotify are not called">Demo</span>}
           <div className="profile-container">
             <UserProfile
               profile={profile}

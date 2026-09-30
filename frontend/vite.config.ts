@@ -1,21 +1,18 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+/// <reference types="vitest/config" />
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
     port: 5175,
-    watch: {
-      usePolling: true,
-    },
-    hmr: {
-      clientPort: 5175,
-    },
     proxy: {
       '/api': 'http://localhost:8080',
     },
   },
-})
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+  },
+});

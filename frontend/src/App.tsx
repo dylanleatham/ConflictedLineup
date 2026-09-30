@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './auth';
 import { Header } from './components/Header';
@@ -6,6 +7,18 @@ import { LoginPage } from './components/LoginPage';
 import { UploadPage } from './pages/UploadPage';
 import { TrackSelectionPage } from './pages/TrackSelectionPage';
 import { PlaylistResultsPage } from './pages/PlaylistResultsPage';
+
+/**
+ * Client-side navigation keeps the window's scroll position, so moving from a long track list to the
+ * results page would land mid-page, below the "Playlist Created!" banner.
+ */
+function ScrollToTopOnNavigate() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function App() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -29,6 +42,7 @@ function App() {
   // Show Header and routed pages when authenticated
   return (
     <div className="app-container">
+      <ScrollToTopOnNavigate />
       <Header />
       <Routes>
         <Route path="/" element={<UploadPage />} />
