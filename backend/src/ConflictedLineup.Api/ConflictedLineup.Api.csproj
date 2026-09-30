@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Anthropic" Version="12.51.0" />
-    <PackageReference Include="DotNetEnv" Version="3.1.1" />
-    <PackageReference Include="SpotifyAPI.Web" Version="7.2.1" />
+    <PackageReference Include="DotNetEnv" Version="3.2.0" />
+    <PackageReference Include="SpotifyAPI.Web" Version="7.4.2" />
   </ItemGroup>
 
   <ItemGroup>
